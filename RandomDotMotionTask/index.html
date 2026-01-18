@@ -17,6 +17,46 @@
     
     <style>
         body { margin: 0; }
+        
+        /* Dual-thumb range slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid #1e293b;
+            position: relative;
+            z-index: 3;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid #1e293b;
+            position: relative;
+            z-index: 3;
+        }
+        
+        input[type="range"]:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        input[type="range"]:focus::-moz-range-thumb {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -411,6 +451,12 @@
             const [numDots, setNumDots] = useState(100);
             const [stimulusDuration, setStimulusDuration] = useState(1000);
             
+            // User-configurable ranges for randomization
+            const [coherenceMin, setCoherenceMin] = useState(0);
+            const [coherenceMax, setCoherenceMax] = useState(0.5);
+            const [durationMin, setDurationMin] = useState(250);
+            const [durationMax, setDurationMax] = useState(1000);
+            
             // Trial data
             const [trials, setTrials] = useState([]);
             const [trialCount, setTrialCount] = useState(0);
@@ -448,12 +494,14 @@
                 const coherences = [];
                 const durations = [];
                 for (let i = 0; i < totalTrials; i++) {
-                    coherences.push(Math.random() * 0.5); // 0 to 50%
-                    durations.push(Math.floor(Math.random() * 751) + 250); // 250-1000ms
+                    // Random coherence within user-defined range
+                    coherences.push(Math.random() * (coherenceMax - coherenceMin) + coherenceMin);
+                    // Random duration within user-defined range
+                    durations.push(Math.floor(Math.random() * (durationMax - durationMin + 1)) + durationMin);
                 }
                 setTrialCoherences(coherences);
                 setTrialDurations(durations);
-            }, [totalTrials]);
+            }, [totalTrials, coherenceMin, coherenceMax, durationMin, durationMax]);
 
             // ═══════════════════════════════════════════════════════════════
             // FIREBASE AUTHENTICATION
@@ -535,9 +583,13 @@
                         correctRT,
                         totalTrials,
                         numDots,
-                        // Save trial parameter ranges
-                        coherenceRange: '0-50%',
-                        durationRange: '250-1000ms',
+                        // Save user-defined parameter ranges
+                        coherenceMin: coherenceMin,
+                        coherenceMax: coherenceMax,
+                        coherenceRange: `${(coherenceMin * 100).toFixed(0)}-${(coherenceMax * 100).toFixed(0)}%`,
+                        durationMin: durationMin,
+                        durationMax: durationMax,
+                        durationRange: `${durationMin}-${durationMax}ms`,
                         // Save full trial-by-trial data with individual parameters
                         trials,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -849,18 +901,100 @@
                                         </div>
                                         <div>
                                             <label className="block text-sm text-slate-400 mb-2">
-                                                Coherence: Randomized per trial (0-50%)
+                                                Coherence Range: {(coherenceMin * 100).toFixed(0)}% - {(coherenceMax * 100).toFixed(0)}%
                                             </label>
-                                            <div className="bg-slate-800 rounded p-3 text-xs text-slate-300">
-                                                Each of the 20 trials will use a randomly selected coherence level between 0% and 50%
+                                            <div className="relative pt-6 pb-2">
+                                                {/* Visual range indicator */}
+                                                <div className="absolute top-8 left-0 right-0 h-2 bg-slate-700 rounded">
+                                                    <div 
+                                                        className="absolute h-full bg-blue-500 rounded"
+                                                        style={{
+                                                            left: `${(coherenceMin / 0.8) * 100}%`,
+                                                            right: `${100 - (coherenceMax / 0.8) * 100}%`
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                                {/* Min slider */}
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="0.8"
+                                                    step="0.05"
+                                                    value={coherenceMin}
+                                                    onChange={(e) => setCoherenceMin(Math.min(parseFloat(e.target.value), coherenceMax - 0.05))}
+                                                    className="absolute top-6 left-0 right-0 w-full appearance-none bg-transparent pointer-events-auto"
+                                                    style={{
+                                                        background: 'transparent',
+                                                        WebkitAppearance: 'none'
+                                                    }}
+                                                />
+                                                {/* Max slider */}
+                                                <input
+                                                    type="range"
+                                                    min="0.05"
+                                                    max="0.8"
+                                                    step="0.05"
+                                                    value={coherenceMax}
+                                                    onChange={(e) => setCoherenceMax(Math.max(parseFloat(e.target.value), coherenceMin + 0.05))}
+                                                    className="absolute top-6 left-0 right-0 w-full appearance-none bg-transparent pointer-events-auto"
+                                                    style={{
+                                                        background: 'transparent',
+                                                        WebkitAppearance: 'none'
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="flex justify-between text-xs text-slate-500">
+                                                <span>0%</span>
+                                                <span>80%</span>
                                             </div>
                                         </div>
                                         <div>
                                             <label className="block text-sm text-slate-400 mb-2">
-                                                Stimulus Duration: Randomized per trial (250-1000ms)
+                                                Stimulus Duration Range: {durationMin}ms - {durationMax}ms
                                             </label>
-                                            <div className="bg-slate-800 rounded p-3 text-xs text-slate-300">
-                                                Each trial will show the stimulus for a randomly selected duration between 250ms and 1000ms
+                                            <div className="relative pt-6 pb-2">
+                                                {/* Visual range indicator */}
+                                                <div className="absolute top-8 left-0 right-0 h-2 bg-slate-700 rounded">
+                                                    <div 
+                                                        className="absolute h-full bg-green-500 rounded"
+                                                        style={{
+                                                            left: `${((durationMin - 100) / 1900) * 100}%`,
+                                                            right: `${100 - ((durationMax - 100) / 1900) * 100}%`
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                                {/* Min slider */}
+                                                <input
+                                                    type="range"
+                                                    min="100"
+                                                    max="2000"
+                                                    step="50"
+                                                    value={durationMin}
+                                                    onChange={(e) => setDurationMin(Math.min(parseInt(e.target.value), durationMax - 50))}
+                                                    className="absolute top-6 left-0 right-0 w-full appearance-none bg-transparent pointer-events-auto"
+                                                    style={{
+                                                        background: 'transparent',
+                                                        WebkitAppearance: 'none'
+                                                    }}
+                                                />
+                                                {/* Max slider */}
+                                                <input
+                                                    type="range"
+                                                    min="150"
+                                                    max="2000"
+                                                    step="50"
+                                                    value={durationMax}
+                                                    onChange={(e) => setDurationMax(Math.max(parseInt(e.target.value), durationMin + 50))}
+                                                    className="absolute top-6 left-0 right-0 w-full appearance-none bg-transparent pointer-events-auto"
+                                                    style={{
+                                                        background: 'transparent',
+                                                        WebkitAppearance: 'none'
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="flex justify-between text-xs text-slate-500">
+                                                <span>100ms</span>
+                                                <span>2000ms</span>
                                             </div>
                                         </div>
                                     </div>
@@ -978,7 +1112,10 @@
                                                 </div>
                                                 <div className="text-sm text-slate-400">Trials Completed</div>
                                                 <div className="text-xs text-slate-500 mt-1">
-                                                    0-50% coherence range
+                                                    Coherence: {(coherenceMin * 100).toFixed(0)}-{(coherenceMax * 100).toFixed(0)}%
+                                                </div>
+                                                <div className="text-xs text-slate-500">
+                                                    Duration: {durationMin}-{durationMax}ms
                                                 </div>
                                             </div>
                                         </div>
@@ -999,9 +1136,22 @@
                                 {/* Population Comparison */}
                                 {populationData.length > 1 && (
                                     <div className="mb-6">
-                                        <h3 className="text-lg font-semibold mb-4 text-center">
-                                            📊 Population Performance (n={populationData.length})
-                                        </h3>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-lg font-semibold text-center flex-1">
+                                                📊 Population Performance
+                                            </h3>
+                                            <button
+                                                onClick={loadPopulationData}
+                                                disabled={isLoadingPopulation}
+                                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-3 py-1 rounded text-sm transition"
+                                                title="Refresh population data"
+                                            >
+                                                {isLoadingPopulation ? '⟳' : '🔄'} Refresh
+                                            </button>
+                                        </div>
+                                        <div className="text-center text-sm text-slate-400 mb-4">
+                                            {populationData.length} users • {populationData.reduce((sum, d) => sum + (d.totalTrials || 0), 0).toLocaleString()} total trials
+                                        </div>
                                         
                                         {/* Population Summary Stats */}
                                         <div className="bg-slate-900 rounded-lg p-4 mb-4">
@@ -1096,14 +1246,29 @@
                                 )}
                                 
                                 {populationData.length <= 1 && firebaseStatus === 'connected' && (
-                                    <div className="bg-slate-900 rounded-lg p-4 mb-6 text-center">
-                                        <p className="text-slate-400">
-                                            {isLoadingPopulation ? (
-                                                "Loading population data..."
-                                            ) : (
-                                                "You're among the first! Population comparison will appear as more people complete the task."
-                                            )}
-                                        </p>
+                                    <div className="bg-slate-900 rounded-lg p-4 mb-6">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-slate-400 flex-1 text-center">
+                                                {isLoadingPopulation ? (
+                                                    "Loading population data..."
+                                                ) : (
+                                                    "You're among the first! Population comparison will appear as more people complete the task."
+                                                )}
+                                            </p>
+                                            <button
+                                                onClick={loadPopulationData}
+                                                disabled={isLoadingPopulation}
+                                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-3 py-1 rounded text-sm transition ml-3"
+                                                title="Refresh population data"
+                                            >
+                                                {isLoadingPopulation ? '⟳' : '🔄'}
+                                            </button>
+                                        </div>
+                                        {populationData.length === 1 && (
+                                            <div className="text-center text-xs text-slate-500 mt-2">
+                                                {populationData.reduce((sum, d) => sum + (d.totalTrials || 0), 0)} trials completed
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 
