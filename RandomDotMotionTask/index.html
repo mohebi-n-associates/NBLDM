@@ -797,32 +797,20 @@
                                     </h3>
                                     <div className="grid grid-cols-1 gap-4">
                                         <div>
-                                            <label className="block text-sm text-slate-400 mb-1">
-                                                Coherence: {(coherence * 100).toFixed(0)}%
+                                            <label className="block text-sm text-slate-400 mb-2">
+                                                Coherence: Randomized per trial (0-50%)
                                             </label>
-                                            <input
-                                                type="range"
-                                                min="0.05"
-                                                max="0.8"
-                                                step="0.05"
-                                                value={coherence}
-                                                onChange={(e) => setCoherence(parseFloat(e.target.value))}
-                                                className="w-full accent-blue-500"
-                                            />
+                                            <div className="bg-slate-800 rounded p-3 text-xs text-slate-300">
+                                                Each of the 20 trials will use a randomly selected coherence level between 0% and 50%
+                                            </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-slate-400 mb-1">
-                                                Stimulus Duration: {stimulusDuration}ms
+                                            <label className="block text-sm text-slate-400 mb-2">
+                                                Stimulus Duration: Randomized per trial (250-1000ms)
                                             </label>
-                                            <input
-                                                type="range"
-                                                min="200"
-                                                max="2000"
-                                                step="100"
-                                                value={stimulusDuration}
-                                                onChange={(e) => setStimulusDuration(parseInt(e.target.value))}
-                                                className="w-full accent-blue-500"
-                                            />
+                                            <div className="bg-slate-800 rounded p-3 text-xs text-slate-300">
+                                                Each trial will show the stimulus for a randomly selected duration between 250ms and 1000ms
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
