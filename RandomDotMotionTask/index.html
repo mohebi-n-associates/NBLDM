@@ -874,8 +874,8 @@
                                     decide which direction the coherent dots are moving.
                                 </p>
                                 <ul className="text-slate-300 space-y-2 mb-6">
-                                    <li>• Press <span className="bg-slate-700 px-2 py-1 rounded font-mono">SPACE</span> to start each trial</li>
-                                    <li>• Press <span className="bg-slate-700 px-2 py-1 rounded font-mono">←</span> for LEFT or <span className="bg-slate-700 px-2 py-1 rounded font-mono">→</span> for RIGHT</li>
+                                    <li>• Press <span className="bg-slate-700 px-2 py-1 rounded font-mono">SPACE</span> or tap the button to start each trial</li>
+                                    <li>• Press <span className="bg-slate-700 px-2 py-1 rounded font-mono">←</span>/<span className="bg-slate-700 px-2 py-1 rounded font-mono">→</span> or tap LEFT/RIGHT buttons to respond</li>
                                     <li>• Respond as quickly and accurately as possible</li>
                                 </ul>
                                 
@@ -1033,7 +1033,7 @@
                         {/* ─────────────────────────────────────────────────────── */}
                         {(gameState === 'ready' || gameState === 'stimulus' || gameState === 'feedback') && (
                             <div className="flex flex-col items-center">
-                                <div className="mb-4 text-sm text-slate-400">
+                                <div className="mb-4 text-sm text-slate-400 text-center">
                                     Trial {trialCount + 1} of {totalTrials} | 
                                     Coherence: {trialCoherences.length > 0 ? (trialCoherences[trialCount] * 100).toFixed(0) : (coherence * 100).toFixed(0)}% | 
                                     Duration: {trialDurations.length > 0 ? trialDurations[trialCount] : stimulusDuration}ms
@@ -1043,11 +1043,19 @@
                                     ref={canvasRef}
                                     width={CANVAS_SIZE}
                                     height={CANVAS_SIZE}
-                                    className="rounded-lg mb-4"
+                                    className="rounded-lg mb-4 max-w-full h-auto"
                                 />
                                 
                                 {gameState === 'ready' && !feedback && (
-                                    <p className="text-slate-400 mb-4">Press SPACE to start trial</p>
+                                    <div className="mb-4 flex flex-col items-center gap-2">
+                                        <p className="text-slate-400 text-sm text-center">Press SPACE or tap below to start trial</p>
+                                        <button
+                                            onClick={startTrial}
+                                            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 px-8 py-4 rounded-lg font-semibold text-lg transition touch-manipulation"
+                                        >
+                                            ▶ Start Trial
+                                        </button>
+                                    </div>
                                 )}
                                 
                                 {feedback && (
@@ -1058,16 +1066,18 @@
                                     </p>
                                 )}
                                 
-                                <div className="flex gap-4">
+                                <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md px-4">
                                     <button
                                         onClick={() => handleResponse('left')}
-                                        className="bg-slate-700 hover:bg-slate-600 px-8 py-3 rounded-lg font-semibold transition"
+                                        disabled={gameState === 'feedback'}
+                                        className="flex-1 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-4 rounded-lg font-bold text-lg transition touch-manipulation"
                                     >
                                         ← LEFT
                                     </button>
                                     <button
                                         onClick={() => handleResponse('right')}
-                                        className="bg-slate-700 hover:bg-slate-600 px-8 py-3 rounded-lg font-semibold transition"
+                                        disabled={gameState === 'feedback'}
+                                        className="flex-1 bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-4 rounded-lg font-bold text-lg transition touch-manipulation"
                                     >
                                         RIGHT →
                                     </button>
