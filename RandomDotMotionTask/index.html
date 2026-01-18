@@ -882,8 +882,8 @@
                                     </h3>
                                     <div className="grid grid-cols-1 gap-4">
                                         <div>
-                                            <label className="block text-sm text-slate-400 mb-2">
-                                                Number of Trials: {totalTrials}
+                                            <label className="block text-sm font-medium text-slate-300 mb-3">
+                                                Number of Trials: <span className="text-blue-400 font-bold">{totalTrials}</span>
                                             </label>
                                             <input
                                                 type="range"
@@ -894,20 +894,20 @@
                                                 onChange={(e) => setTotalTrials(parseInt(e.target.value))}
                                                 className="w-full accent-blue-500"
                                             />
-                                            <div className="flex justify-between text-xs text-slate-500 mt-1">
-                                                <span>5</span>
-                                                <span>50</span>
+                                            <div className="flex justify-between text-xs font-semibold text-slate-300 mt-2">
+                                                <span className="bg-slate-700 px-2 py-0.5 rounded">5</span>
+                                                <span className="bg-slate-700 px-2 py-0.5 rounded">50</span>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-slate-400 mb-2">
-                                                Coherence Range: {(coherenceMin * 100).toFixed(0)}% - {(coherenceMax * 100).toFixed(0)}%
+                                            <label className="block text-sm font-medium text-slate-300 mb-3">
+                                                Coherence Range: <span className="text-blue-400 font-bold">{(coherenceMin * 100).toFixed(0)}% - {(coherenceMax * 100).toFixed(0)}%</span>
                                             </label>
                                             <div className="relative pt-6 pb-2">
                                                 {/* Visual range indicator */}
-                                                <div className="absolute top-8 left-0 right-0 h-2 bg-slate-700 rounded">
+                                                <div className="absolute top-8 left-0 right-0 h-2 bg-slate-700 rounded shadow-inner">
                                                     <div 
-                                                        className="absolute h-full bg-blue-500 rounded"
+                                                        className="absolute h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded shadow-md"
                                                         style={{
                                                             left: `${(coherenceMin / 0.8) * 100}%`,
                                                             right: `${100 - (coherenceMax / 0.8) * 100}%`
@@ -943,20 +943,20 @@
                                                     }}
                                                 />
                                             </div>
-                                            <div className="flex justify-between text-xs text-slate-500">
-                                                <span>0%</span>
-                                                <span>80%</span>
+                                            <div className="flex justify-between text-xs font-semibold text-slate-300 mt-1">
+                                                <span className="bg-slate-700 px-2 py-0.5 rounded">0%</span>
+                                                <span className="bg-slate-700 px-2 py-0.5 rounded">80%</span>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-slate-400 mb-2">
-                                                Stimulus Duration Range: {durationMin}ms - {durationMax}ms
+                                            <label className="block text-sm font-medium text-slate-300 mb-3">
+                                                Stimulus Duration Range: <span className="text-green-400 font-bold">{durationMin}ms - {durationMax}ms</span>
                                             </label>
                                             <div className="relative pt-6 pb-2">
                                                 {/* Visual range indicator */}
-                                                <div className="absolute top-8 left-0 right-0 h-2 bg-slate-700 rounded">
+                                                <div className="absolute top-8 left-0 right-0 h-2 bg-slate-700 rounded shadow-inner">
                                                     <div 
-                                                        className="absolute h-full bg-green-500 rounded"
+                                                        className="absolute h-full bg-gradient-to-r from-green-500 to-green-400 rounded shadow-md"
                                                         style={{
                                                             left: `${((durationMin - 100) / 1900) * 100}%`,
                                                             right: `${100 - ((durationMax - 100) / 1900) * 100}%`
@@ -992,9 +992,9 @@
                                                     }}
                                                 />
                                             </div>
-                                            <div className="flex justify-between text-xs text-slate-500">
-                                                <span>100ms</span>
-                                                <span>2000ms</span>
+                                            <div className="flex justify-between text-xs font-semibold text-slate-300 mt-1">
+                                                <span className="bg-slate-700 px-2 py-0.5 rounded">100ms</span>
+                                                <span className="bg-slate-700 px-2 py-0.5 rounded">2000ms</span>
                                             </div>
                                         </div>
                                     </div>
