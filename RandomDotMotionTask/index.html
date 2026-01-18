@@ -8,6 +8,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
     <style>
         body { margin: 0; }
     </style>
@@ -15,115 +22,316 @@
 <body>
     <div id="root"></div>
 
+    <script>
+        /*
+        ╔═══════════════════════════════════════════════════════════════════════════╗
+        ║                     FIREBASE CONFIGURATION                                ║
+        ║                                                                           ║
+        ║  To enable data saving and population comparison:                         ║
+        ║  1. Go to https://console.firebase.google.com/                            ║
+        ║  2. Create a new project (or use existing)                                ║
+        ║  3. Add a web app to get your config                                      ║
+        ║  4. Enable Firestore Database (start in test mode)                        ║
+        ║  5. Enable Anonymous Authentication                                       ║
+        ║  6. Replace the config below with your values                             ║
+        ╚═══════════════════════════════════════════════════════════════════════════╝
+        */
+        
+        const firebaseConfig = {
+            // ⚠️ REPLACE THESE WITH YOUR FIREBASE CONFIG ⚠️
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Check if Firebase is configured
+        const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+        
+        let db = null;
+        let auth = null;
+        
+        if (isFirebaseConfigured) {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                auth = firebase.auth();
+            } catch (e) {
+                console.error("Firebase initialization error:", e);
+            }
+        }
+    </script>
+
     <script type="text/babel">
         const { useState, useEffect, useRef, useCallback } = React;
 
         /*
         ╔═══════════════════════════════════════════════════════════════════════════╗
         ║                     RANDOM DOT MOTION TASK                                ║
-        ║                                                                           ║
-        ║  A classic perceptual decision-making paradigm used to study how          ║
-        ║  observers extract signal from noise and make choices under uncertainty.  ║
-        ║                                                                           ║
-        ║  KEY PARAMETERS TO EXPLORE:                                               ║
-        ║  • coherence: proportion of dots moving in the signal direction           ║
-        ║  • stimulusDuration: how long the dots are shown                          ║
-        ║  • numDots: total number of dots in the display                           ║
-        ║  • DOT_SPEED: how fast dots move (pixels per frame)                       ║
-        ║                                                                           ║
-        ║  DISCUSSION QUESTIONS:                                                    ║
-        ║  1. How does coherence affect accuracy AND reaction time?                 ║
-        ║  2. What coherence level produces chance performance (50%)?               ║
-        ║  3. Does longer viewing time always improve accuracy?                     ║
-        ║  4. What does this reveal about how "decisions" are made?                 ║
-        ║                                                                           ║
-        ║  EXTENSION IDEAS:                                                         ║
-        ║  • Add confidence ratings after each response                             ║
-        ║  • Implement response deadlines                                           ║
-        ║  • Add asymmetric rewards for left vs right                               ║
-        ║  • Plot psychometric curves across coherence levels                       ║
+        ║                     WITH POPULATION COMPARISON                            ║
         ╚═══════════════════════════════════════════════════════════════════════════╝
         */
 
+        // ═══════════════════════════════════════════════════════════════
+        // HISTOGRAM COMPONENT
+        // ═══════════════════════════════════════════════════════════════
+        const Histogram = ({ data, userValue, label, color, unit = "" }) => {
+            const canvasRef = useRef(null);
+            
+            useEffect(() => {
+                if (!canvasRef.current || data.length === 0) return;
+                
+                const ctx = canvasRef.current.getContext('2d');
+                
+                // Destroy existing chart
+                if (canvasRef.current.chart) {
+                    canvasRef.current.chart.destroy();
+                }
+                
+                // Create histogram bins
+                const min = Math.min(...data);
+                const max = Math.max(...data);
+                const binCount = 10;
+                const binWidth = (max - min) / binCount || 1;
+                const bins = Array(binCount).fill(0);
+                const binLabels = [];
+                
+                for (let i = 0; i < binCount; i++) {
+                    const binStart = min + i * binWidth;
+                    const binEnd = min + (i + 1) * binWidth;
+                    binLabels.push(`${binStart.toFixed(0)}${unit}`);
+                    
+                    data.forEach(val => {
+                        if (val >= binStart && (val < binEnd || (i === binCount - 1 && val <= binEnd))) {
+                            bins[i]++;
+                        }
+                    });
+                }
+                
+                // Find which bin the user falls into
+                const userBin = Math.min(
+                    Math.floor((userValue - min) / binWidth),
+                    binCount - 1
+                );
+                
+                const backgroundColors = bins.map((_, i) => 
+                    i === userBin ? '#f59e0b' : color
+                );
+                
+                canvasRef.current.chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: binLabels,
+                        datasets: [{
+                            label: label,
+                            data: bins,
+                            backgroundColor: backgroundColors,
+                            borderColor: backgroundColors.map(c => c === '#f59e0b' ? '#d97706' : c.replace('0.6', '1')),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: label,
+                                color: '#94a3b8',
+                                font: { size: 12 }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: '#64748b', font: { size: 9 } },
+                                grid: { color: '#334155' }
+                            },
+                            y: {
+                                ticks: { color: '#64748b' },
+                                grid: { color: '#334155' },
+                                title: {
+                                    display: true,
+                                    text: 'Count',
+                                    color: '#64748b'
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                return () => {
+                    if (canvasRef.current?.chart) {
+                        canvasRef.current.chart.destroy();
+                    }
+                };
+            }, [data, userValue, label, color, unit]);
+            
+            return (
+                <div className="h-48">
+                    <canvas ref={canvasRef}></canvas>
+                </div>
+            );
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // PERCENTILE CALCULATOR
+        // ═══════════════════════════════════════════════════════════════
+        const calculatePercentile = (value, data) => {
+            if (data.length === 0) return 50;
+            const sorted = [...data].sort((a, b) => a - b);
+            const index = sorted.findIndex(v => v >= value);
+            if (index === -1) return 100;
+            return Math.round((index / sorted.length) * 100);
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // MAIN COMPONENT
+        // ═══════════════════════════════════════════════════════════════
         const DotMotionTask = () => {
             const canvasRef = useRef(null);
             
-            // ═══════════════════════════════════════════════════════════════
-            // GAME STATE
-            // ═══════════════════════════════════════════════════════════════
-            const [gameState, setGameState] = useState('intro'); 
-            // States: 'intro' | 'ready' | 'stimulus' | 'feedback' | 'results'
+            // Game state
+            const [gameState, setGameState] = useState('intro');
+            const [participantId, setParticipantId] = useState(null);
+            const [participantName, setParticipantName] = useState('');
             
-            // ═══════════════════════════════════════════════════════════════
-            // ADJUSTABLE PARAMETERS - Try changing these!
-            // ═══════════════════════════════════════════════════════════════
-            const [coherence, setCoherence] = useState(0.3);        // 0.0 to 1.0
-            const [numDots, setNumDots] = useState(100);            // total dots
-            const [stimulusDuration, setStimulusDuration] = useState(1000); // ms
+            // Parameters
+            const [coherence, setCoherence] = useState(0.3);
+            const [numDots, setNumDots] = useState(100);
+            const [stimulusDuration, setStimulusDuration] = useState(1000);
             
-            // ═══════════════════════════════════════════════════════════════
-            // TRIAL DATA
-            // ═══════════════════════════════════════════════════════════════
+            // Trial data
             const [trials, setTrials] = useState([]);
-            const [currentTrial, setCurrentTrial] = useState(null);
             const [trialCount, setTrialCount] = useState(0);
             const [totalTrials] = useState(10);
             const [feedback, setFeedback] = useState(null);
             const [stimulusStartTime, setStimulusStartTime] = useState(null);
             
-            // ═══════════════════════════════════════════════════════════════
-            // DISPLAY CONSTANTS - Advanced users can modify these
-            // ═══════════════════════════════════════════════════════════════
+            // Population data
+            const [populationData, setPopulationData] = useState([]);
+            const [isLoadingPopulation, setIsLoadingPopulation] = useState(false);
+            const [dataSaved, setDataSaved] = useState(false);
+            
+            // Firebase status
+            const [firebaseStatus, setFirebaseStatus] = useState(
+                isFirebaseConfigured ? 'connecting' : 'not_configured'
+            );
+            
+            // Display constants
             const CANVAS_SIZE = 300;
             const DOT_RADIUS = 2;
-            const DOT_SPEED = 3;          // pixels per frame
-            const APERTURE_RADIUS = 120;  // circular viewing window
+            const DOT_SPEED = 3;
+            const APERTURE_RADIUS = 120;
             
-            // Internal refs (don't modify unless you know what you're doing)
+            // Refs
             const dotsRef = useRef([]);
-            const directionRef = useRef(1);  // 1 = right, -1 = left
+            const directionRef = useRef(1);
             const animationRef = useRef(null);
 
             // ═══════════════════════════════════════════════════════════════
-            // DOT INITIALIZATION
-            // Creates the dot field with signal and noise dots
+            // FIREBASE AUTHENTICATION
+            // ═══════════════════════════════════════════════════════════════
+            useEffect(() => {
+                if (!isFirebaseConfigured || !auth) {
+                    setFirebaseStatus('not_configured');
+                    return;
+                }
+                
+                auth.signInAnonymously()
+                    .then((result) => {
+                        setParticipantId(result.user.uid);
+                        setFirebaseStatus('connected');
+                    })
+                    .catch((error) => {
+                        console.error("Auth error:", error);
+                        setFirebaseStatus('error');
+                    });
+            }, []);
+
+            // ═══════════════════════════════════════════════════════════════
+            // LOAD POPULATION DATA
+            // ═══════════════════════════════════════════════════════════════
+            const loadPopulationData = async () => {
+                if (!db || firebaseStatus !== 'connected') return;
+                
+                setIsLoadingPopulation(true);
+                try {
+                    const snapshot = await db.collection('dot_motion_results')
+                        .where('coherence', '==', coherence)
+                        .orderBy('timestamp', 'desc')
+                        .limit(500)
+                        .get();
+                    
+                    const data = snapshot.docs.map(doc => doc.data());
+                    setPopulationData(data);
+                } catch (error) {
+                    console.error("Error loading population data:", error);
+                }
+                setIsLoadingPopulation(false);
+            };
+
+            // ═══════════════════════════════════════════════════════════════
+            // SAVE RESULTS TO FIREBASE
+            // ═══════════════════════════════════════════════════════════════
+            const saveResults = async (accuracy, meanRT, correctRT) => {
+                if (!db || firebaseStatus !== 'connected') return;
+                
+                try {
+                    await db.collection('dot_motion_results').add({
+                        participantId,
+                        participantName: participantName || 'Anonymous',
+                        coherence,
+                        stimulusDuration,
+                        numDots,
+                        accuracy,
+                        meanRT,
+                        correctRT,
+                        totalTrials,
+                        trials,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        userAgent: navigator.userAgent
+                    });
+                    setDataSaved(true);
+                    // Reload population data to include this result
+                    await loadPopulationData();
+                } catch (error) {
+                    console.error("Error saving results:", error);
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════════
+            // DOT MOTION LOGIC
             // ═══════════════════════════════════════════════════════════════
             const initializeDots = useCallback(() => {
                 const dots = [];
                 for (let i = 0; i < numDots; i++) {
-                    // Random position within circular aperture
                     const angle = Math.random() * Math.PI * 2;
                     const r = Math.random() * APERTURE_RADIUS;
                     dots.push({
                         x: CANVAS_SIZE/2 + Math.cos(angle) * r,
                         y: CANVAS_SIZE/2 + Math.sin(angle) * r,
-                        // This is the key: coherence determines signal vs noise
                         isSignal: Math.random() < coherence
                     });
                 }
                 dotsRef.current = dots;
             }, [numDots, coherence]);
 
-            // ═══════════════════════════════════════════════════════════════
-            // DOT MOTION UPDATE
-            // Signal dots move coherently; noise dots move randomly
-            // ═══════════════════════════════════════════════════════════════
             const updateDots = useCallback(() => {
                 dotsRef.current = dotsRef.current.map(dot => {
                     let newX, newY;
                     
                     if (dot.isSignal) {
-                        // SIGNAL: Move in the coherent direction (left or right)
                         newX = dot.x + DOT_SPEED * directionRef.current;
                         newY = dot.y;
                     } else {
-                        // NOISE: Move in a random direction
                         const randomAngle = Math.random() * Math.PI * 2;
                         newX = dot.x + Math.cos(randomAngle) * DOT_SPEED;
                         newY = dot.y + Math.sin(randomAngle) * DOT_SPEED;
                     }
                     
-                    // Wrap dots that exit the aperture
                     const dx = newX - CANVAS_SIZE/2;
                     const dy = newY - CANVAS_SIZE/2;
                     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -138,26 +346,20 @@
                 });
             }, []);
 
-            // ═══════════════════════════════════════════════════════════════
-            // RENDERING
-            // ═══════════════════════════════════════════════════════════════
             const draw = useCallback(() => {
                 const canvas = canvasRef.current;
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 
-                // Background
                 ctx.fillStyle = '#1a1a2e';
                 ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
                 
-                // Aperture boundary
                 ctx.strokeStyle = '#4a4a6a';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.arc(CANVAS_SIZE/2, CANVAS_SIZE/2, APERTURE_RADIUS, 0, Math.PI * 2);
                 ctx.stroke();
                 
-                // Fixation cross (helps stabilize eye position)
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
@@ -167,7 +369,6 @@
                 ctx.lineTo(CANVAS_SIZE/2, CANVAS_SIZE/2 + 10);
                 ctx.stroke();
                 
-                // Only draw dots during stimulus presentation
                 if (gameState === 'stimulus') {
                     ctx.fillStyle = '#ffffff';
                     dotsRef.current.forEach(dot => {
@@ -178,7 +379,6 @@
                 }
             }, [gameState]);
 
-            // Animation loop
             useEffect(() => {
                 if (gameState === 'stimulus') {
                     const animate = () => {
@@ -198,17 +398,12 @@
                 }
             }, [gameState, draw, updateDots]);
 
-            // ═══════════════════════════════════════════════════════════════
-            // TRIAL CONTROL
-            // ═══════════════════════════════════════════════════════════════
             const startTrial = useCallback(() => {
-                // Randomly choose left (-1) or right (1) for this trial
                 directionRef.current = Math.random() < 0.5 ? -1 : 1;
                 initializeDots();
                 setGameState('stimulus');
                 setStimulusStartTime(Date.now());
                 
-                // Auto-end stimulus after duration (participant can still respond)
                 setTimeout(() => {
                     if (animationRef.current) {
                         cancelAnimationFrame(animationRef.current);
@@ -217,10 +412,6 @@
                 }, stimulusDuration);
             }, [initializeDots, stimulusDuration]);
 
-            // ═══════════════════════════════════════════════════════════════
-            // RESPONSE HANDLING
-            // Records choice, accuracy, and reaction time
-            // ═══════════════════════════════════════════════════════════════
             const handleResponse = useCallback((response) => {
                 if (gameState !== 'stimulus' && gameState !== 'ready') return;
                 if (stimulusStartTime === null) return;
@@ -239,11 +430,9 @@
                 };
                 
                 setTrials(prev => [...prev, trialData]);
-                setCurrentTrial(trialData);
                 setFeedback(correct ? 'Correct!' : 'Incorrect');
                 setGameState('feedback');
                 
-                // Brief feedback, then next trial or results
                 setTimeout(() => {
                     if (trialCount + 1 >= totalTrials) {
                         setGameState('results');
@@ -255,7 +444,6 @@
                 }, 800);
             }, [gameState, stimulusStartTime, trialCount, totalTrials, coherence]);
 
-            // Keyboard controls
             useEffect(() => {
                 const handleKeyDown = (e) => {
                     if (e.key === 'ArrowLeft') {
@@ -275,7 +463,7 @@
             // ═══════════════════════════════════════════════════════════════
             // RESULTS CALCULATION
             // ═══════════════════════════════════════════════════════════════
-            const getResults = () => {
+            const getResults = useCallback(() => {
                 if (trials.length === 0) return { accuracy: 0, meanRT: 0, correctRT: 0 };
                 const accuracy = trials.filter(t => t.correct).length / trials.length;
                 const meanRT = trials.reduce((sum, t) => sum + t.rt, 0) / trials.length;
@@ -284,28 +472,61 @@
                     ? correctTrials.reduce((sum, t) => sum + t.rt, 0) / correctTrials.length 
                     : 0;
                 return { accuracy, meanRT, correctRT };
-            };
+            }, [trials]);
+
+            // Save and load when reaching results
+            useEffect(() => {
+                if (gameState === 'results' && !dataSaved) {
+                    const { accuracy, meanRT, correctRT } = getResults();
+                    saveResults(accuracy, meanRT, correctRT);
+                    loadPopulationData();
+                }
+            }, [gameState, dataSaved, getResults]);
 
             const resetGame = () => {
                 setTrials([]);
                 setTrialCount(0);
-                setCurrentTrial(null);
                 setFeedback(null);
+                setDataSaved(false);
                 setGameState('intro');
             };
 
+            // Population statistics
+            const populationAccuracies = populationData.map(d => d.accuracy * 100);
+            const populationRTs = populationData.filter(d => d.correctRT > 0).map(d => d.correctRT);
+            const myResults = getResults();
+
             // ═══════════════════════════════════════════════════════════════
-            // UI RENDERING
+            // RENDER
             // ═══════════════════════════════════════════════════════════════
             return (
                 <div className="min-h-screen bg-slate-900 text-white p-6">
-                    <div className="max-w-2xl mx-auto">
+                    <div className="max-w-3xl mx-auto">
                         <h1 className="text-2xl font-bold text-center mb-2">
                             Random Dot Motion Task
                         </h1>
-                        <p className="text-slate-400 text-center text-sm mb-6">
+                        <p className="text-slate-400 text-center text-sm mb-2">
                             A classic perceptual decision-making paradigm
                         </p>
+                        
+                        {/* Firebase Status */}
+                        <div className="text-center mb-4">
+                            {firebaseStatus === 'connected' && (
+                                <span className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">
+                                    ● Data saving enabled
+                                </span>
+                            )}
+                            {firebaseStatus === 'not_configured' && (
+                                <span className="text-xs bg-yellow-900 text-yellow-300 px-2 py-1 rounded">
+                                    ○ Demo mode (data not saved)
+                                </span>
+                            )}
+                            {firebaseStatus === 'error' && (
+                                <span className="text-xs bg-red-900 text-red-300 px-2 py-1 rounded">
+                                    ✕ Connection error
+                                </span>
+                            )}
+                        </div>
 
                         {/* ─────────────────────────────────────────────────────── */}
                         {/* INTRO SCREEN                                            */}
@@ -324,9 +545,25 @@
                                     <li>• Respond as quickly and accurately as possible</li>
                                 </ul>
                                 
+                                {/* Name input */}
+                                {firebaseStatus === 'connected' && (
+                                    <div className="mb-4">
+                                        <label className="block text-sm text-slate-400 mb-1">
+                                            Your name (optional, for leaderboard):
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={participantName}
+                                            onChange={(e) => setParticipantName(e.target.value)}
+                                            placeholder="Anonymous"
+                                            className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-500"
+                                        />
+                                    </div>
+                                )}
+                                
                                 <div className="border-t border-slate-700 pt-4 mt-4">
                                     <h3 className="text-sm font-semibold text-slate-400 mb-3">
-                                        PARAMETERS (adjust to explore!)
+                                        PARAMETERS
                                     </h3>
                                     <div className="grid grid-cols-1 gap-4">
                                         <div>
@@ -342,9 +579,6 @@
                                                 onChange={(e) => setCoherence(parseFloat(e.target.value))}
                                                 className="w-full accent-blue-500"
                                             />
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                Higher = easier (more signal dots)
-                                            </p>
                                         </div>
                                         <div>
                                             <label className="block text-sm text-slate-400 mb-1">
@@ -359,26 +593,6 @@
                                                 onChange={(e) => setStimulusDuration(parseInt(e.target.value))}
                                                 className="w-full accent-blue-500"
                                             />
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                Longer = more time to accumulate evidence
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-slate-400 mb-1">
-                                                Number of Dots: {numDots}
-                                            </label>
-                                            <input
-                                                type="range"
-                                                min="50"
-                                                max="200"
-                                                step="10"
-                                                value={numDots}
-                                                onChange={(e) => setNumDots(parseInt(e.target.value))}
-                                                className="w-full accent-blue-500"
-                                            />
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                More dots = more information per frame
-                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -442,18 +656,19 @@
                         {/* ─────────────────────────────────────────────────────── */}
                         {gameState === 'results' && (
                             <div className="bg-slate-800 rounded-lg p-6">
-                                <h2 className="text-xl font-bold mb-4 text-center">Results</h2>
+                                <h2 className="text-xl font-bold mb-4 text-center">Your Results</h2>
                                 
+                                {/* Your scores */}
                                 <div className="grid grid-cols-3 gap-4 mb-6">
                                     <div className="bg-slate-700 rounded-lg p-4 text-center">
                                         <div className="text-3xl font-bold text-blue-400">
-                                            {(getResults().accuracy * 100).toFixed(0)}%
+                                            {(myResults.accuracy * 100).toFixed(0)}%
                                         </div>
                                         <div className="text-sm text-slate-400">Accuracy</div>
                                     </div>
                                     <div className="bg-slate-700 rounded-lg p-4 text-center">
                                         <div className="text-3xl font-bold text-green-400">
-                                            {getResults().correctRT.toFixed(0)}ms
+                                            {myResults.correctRT.toFixed(0)}ms
                                         </div>
                                         <div className="text-sm text-slate-400">Correct RT</div>
                                     </div>
@@ -464,10 +679,83 @@
                                         <div className="text-sm text-slate-400">Coherence</div>
                                     </div>
                                 </div>
+
+                                {/* Population Comparison */}
+                                {populationData.length > 1 && (
+                                    <div className="mb-6">
+                                        <h3 className="text-lg font-semibold mb-4 text-center">
+                                            📊 How You Compare (n={populationData.length})
+                                        </h3>
+                                        
+                                        {/* Percentile badges */}
+                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                            <div className="bg-slate-900 rounded-lg p-3 text-center">
+                                                <div className="text-2xl font-bold text-blue-400">
+                                                    {calculatePercentile(myResults.accuracy * 100, populationAccuracies)}th
+                                                </div>
+                                                <div className="text-xs text-slate-400">Accuracy Percentile</div>
+                                            </div>
+                                            <div className="bg-slate-900 rounded-lg p-3 text-center">
+                                                <div className="text-2xl font-bold text-green-400">
+                                                    {100 - calculatePercentile(myResults.correctRT, populationRTs)}th
+                                                </div>
+                                                <div className="text-xs text-slate-400">Speed Percentile</div>
+                                                <div className="text-xs text-slate-500">(faster = higher)</div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Histograms */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="bg-slate-900 rounded-lg p-3">
+                                                <Histogram 
+                                                    data={populationAccuracies}
+                                                    userValue={myResults.accuracy * 100}
+                                                    label="Accuracy Distribution (%)"
+                                                    color="rgba(59, 130, 246, 0.6)"
+                                                    unit="%"
+                                                />
+                                                <div className="text-center text-xs text-amber-400 mt-2">
+                                                    ■ Your score highlighted in orange
+                                                </div>
+                                            </div>
+                                            <div className="bg-slate-900 rounded-lg p-3">
+                                                <Histogram 
+                                                    data={populationRTs}
+                                                    userValue={myResults.correctRT}
+                                                    label="Reaction Time Distribution (ms)"
+                                                    color="rgba(34, 197, 94, 0.6)"
+                                                    unit="ms"
+                                                />
+                                                <div className="text-center text-xs text-amber-400 mt-2">
+                                                    ■ Your score highlighted in orange
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Population stats */}
+                                        <div className="mt-4 text-center text-sm text-slate-400">
+                                            Population avg: {(populationAccuracies.reduce((a,b) => a+b, 0) / populationAccuracies.length).toFixed(0)}% accuracy, {" "}
+                                            {(populationRTs.reduce((a,b) => a+b, 0) / populationRTs.length).toFixed(0)}ms RT
+                                        </div>
+                                    </div>
+                                )}
                                 
+                                {populationData.length <= 1 && firebaseStatus === 'connected' && (
+                                    <div className="bg-slate-900 rounded-lg p-4 mb-6 text-center">
+                                        <p className="text-slate-400">
+                                            {isLoadingPopulation ? (
+                                                "Loading population data..."
+                                            ) : (
+                                                "You're among the first! Population comparison will appear as more people complete the task."
+                                            )}
+                                        </p>
+                                    </div>
+                                )}
+                                
+                                {/* Trial data */}
                                 <div className="bg-slate-700 rounded-lg p-4 mb-6">
                                     <h3 className="font-semibold mb-2">Trial-by-Trial Data</h3>
-                                    <div className="text-xs font-mono text-slate-400 max-h-40 overflow-y-auto">
+                                    <div className="text-xs font-mono text-slate-400 max-h-32 overflow-y-auto">
                                         <div className="grid grid-cols-5 gap-2 mb-1 text-slate-500 border-b border-slate-600 pb-1">
                                             <span>Trial</span>
                                             <span>Dir</span>
@@ -489,45 +777,31 @@
                                     </div>
                                 </div>
                                 
-                                <div className="bg-slate-900 rounded-lg p-4 mb-6">
-                                    <h3 className="font-semibold mb-2 text-sm text-slate-400">
-                                        DISCUSSION QUESTIONS
-                                    </h3>
-                                    <ul className="text-sm text-slate-300 space-y-2">
-                                        <li>• How does lowering coherence affect accuracy AND reaction time?</li>
-                                        <li>• At what coherence level does performance approach chance (50%)?</li>
-                                        <li>• Does longer viewing time always improve accuracy? Why or why not?</li>
-                                        <li>• What does this task reveal about how "decisions" emerge?</li>
-                                    </ul>
-                                </div>
+                                {/* Data saved indicator */}
+                                {dataSaved && (
+                                    <div className="text-center text-sm text-green-400 mb-4">
+                                        ✓ Your results have been saved
+                                    </div>
+                                )}
                                 
                                 <button
                                     onClick={resetGame}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
                                 >
-                                    Try Different Parameters
+                                    Try Again
                                 </button>
                             </div>
                         )}
 
-                        {/* ─────────────────────────────────────────────────────── */}
-                        {/* FOOTER                                                  */}
-                        {/* ─────────────────────────────────────────────────────── */}
+                        {/* Footer */}
                         <div className="mt-8 text-center text-xs text-slate-500">
-                            <p>
-                                Based on the random dot kinematogram paradigm 
-                                (Newsome & Paré, 1988; Shadlen & Newsome, 2001)
-                            </p>
-                            <p className="mt-1">
-                                Fork this on GitHub to create your own version!
-                            </p>
+                            <p>Based on the random dot kinematogram paradigm</p>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        // Mount the app
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<DotMotionTask />);
     </script>
