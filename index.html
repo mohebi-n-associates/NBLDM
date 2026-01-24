@@ -441,6 +441,170 @@
             transform: translateX(5px);
         }
 
+        /* Demonstrations Section */
+        .demonstrations-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem 6rem;
+        }
+
+        .demonstrations-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .demo-item {
+            background: linear-gradient(135deg, var(--dark-light), rgba(30, 41, 59, 0.5));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .demo-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .demo-title-block h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .demo-title-block span {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .demo-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .demo-text p {
+            color: var(--gray);
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .demo-text ul {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .demo-text ul li {
+            color: var(--light);
+            font-size: 0.95rem;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .demo-text ul li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        .demo-iframe {
+            background: var(--dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .demo-iframe iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            display: block;
+        }
+
+        .demo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(transparent, rgba(15, 23, 42, 0.95));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-overlay span {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .demo-overlay a {
+            font-size: 0.85rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .demo-overlay a:hover {
+            color: var(--accent);
+        }
+
+        @media (max-width: 968px) {
+            .demo-content {
+                grid-template-columns: 1fr;
+            }
+
+            .demo-iframe iframe {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .demo-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .demo-iframe iframe {
+                height: 350px;
+            }
+        }
+
         /* About Section */
         .about-section {
             background: linear-gradient(180deg, transparent, rgba(99, 102, 241, 0.05));
@@ -628,6 +792,7 @@
             <span class="logo-text">NLDM</span>
         </a>
         <nav>
+            <a href="#instructional">Instructional</a>
             <a href="#experiments">Experiments</a>
             <a href="#about">About</a>
             <a href="https://github.com/mohebi-n-associates/NLDM" target="_blank">GitHub</a>
@@ -732,6 +897,57 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Demonstrations Section -->
+    <section class="demonstrations-section" id="demonstrations">
+        <div class="section-header">
+            <span class="section-tag">🎓 Interactive Demonstrations</span>
+            <h2>Demonstrations</h2>
+            <p>Visual explanations of key concepts in cognitive neuroscience. Watch, interact, and build intuition for how the brain makes decisions.</p>
+        </div>
+
+        <div class="demonstrations-grid">
+            <!-- Demo 1: Drift Diffusion Model -->
+            <div class="demo-item">
+                <div class="demo-header">
+                    <div class="demo-number">1</div>
+                    <div class="demo-title-block">
+                        <h3>The Drift Diffusion Model</h3>
+                        <span>Mapping the Architecture of Choice</span>
+                    </div>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-text">
+                        <p>How does the brain decide what we perceive? The Drift Diffusion Model (DDM) reveals the neural mechanisms of perceptual decisions—particularly how the brain accumulates noisy sensory evidence over time until reaching a decision threshold.</p>
+                        <p>Watch the random dot motion stimulus and see how the brain's "evidence accumulator" integrates information until it commits to a choice.</p>
+                        <ul>
+                            <li>Coherence controls the drift rate (signal strength)</li>
+                            <li>Threshold determines the speed-accuracy tradeoff</li>
+                            <li>Noise adds randomness—the source of errors</li>
+                            <li>Based on research by Newsome, Shadlen & Ratcliff</li>
+                        </ul>
+                    </div>
+                    <div class="demo-iframe">
+                        <iframe src="./Demonstrations/DriftDiffusionModel/" title="Drift Diffusion Model Demo"></iframe>
+                        <div class="demo-overlay">
+                            <span>Interactive Demo</span>
+                            <a href="./Demonstrations/DriftDiffusionModel/" target="_blank">
+                                Open Full Screen
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- More demonstrations can be added here following the same pattern -->
+
         </div>
     </section>
 

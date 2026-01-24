@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Drift Diffusion Model: Mapping the Architecture of Choice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            color: #1e293b;
+            background-color: #fcfcfd;
+        }
+
+        .serif { font-family: 'Lora', serif; }
+
+        .canvas-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        .prose h2 {
+            font-weight: 700;
+            font-size: 1.875rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.25rem;
+            color: #0f172a;
+        }
+
+        .prose p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .stat-badge {
+            @apply px-4 py-2 rounded-lg bg-slate-100 border border-slate-200 text-center;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Hero Section -->
+    <header class="bg-white border-b border-slate-200 pt-16 pb-12 mb-12">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">
+                The Drift Diffusion Model: <br/><span class="text-blue-600">Mapping the Architecture of Choice</span>
+            </h1>
+            <p class="text-xl text-slate-600 serif italic max-w-2xl mx-auto">
+                An interactive exploration of how the brain accumulates evidence to bridge the gap between perception and action.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 pb-24">
+        
+        <!-- The Interactive App -->
+        <section class="mb-20">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Controls Sidebar -->
+                <div class="lg:col-span-3 space-y-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit sticky top-8">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">Simulator Settings</h3>
+                    
+                    <div>
+                        <div class="slider-label">
+                            <span>Coherence</span>
+                            <span id="coherence-val" class="text-blue-600">20%</span>
+                        </div>
+                        <input type="range" id="coherence" min="-100" max="100" step="1" value="20">
+                    </div>
+
+                    <div>
+                        <div class="slider-label">
+                            <span>Noise ($\sigma$)</span>
+                            <span id="noise-val" class="text-blue-600">0.25</span>
+                        </div>
+                        <input type="range" id="noise" min="0" max="0.8" step="0.01" value="0.25">
+                    </div>
+
+                    <div>
+                        <div class="slider-label">
+                            <span>Threshold ($a$)</span>
+                            <span id="threshold-val" class="text-blue-600">60</span>
+                        </div>
+                        <input type="range" id="threshold" min="20" max="120" step="1" value="60">
+                    </div>
+
+                    <div>
+                        <div class="slider-label">
+                            <span>Sim Speed</span>
+                            <span id="speed-val" class="text-amber-600">1.0x</span>
+                        </div>
+                        <input type="range" id="speed" min="0.1" max="4" step="0.1" value="1">
+                    </div>
+
+                    <div class="pt-4 space-y-3">
+                        <button id="reset-btn" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition-all">
+                            Reset Data
+                        </button>
+                        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <label for="auto-run" class="text-xs font-bold text-slate-600 uppercase">Auto-Run</label>
+                            <input type="checkbox" id="auto-run" checked class="w-5 h-5 accent-blue-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization Area -->
+                <div class="lg:col-span-9 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- RDK Stimulus -->
+                        <div class="canvas-card">
+                            <div class="bg-slate-900 px-4 py-3 flex justify-between items-center">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Visual Stimulus (RDK)</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                                    <span id="dot-dir" class="text-[10px] text-white font-bold">UPWARD</span>
+                                </div>
+                            </div>
+                            <div class="aspect-square bg-black">
+                                <canvas id="dotCanvas"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- DDM Graph -->
+                        <div class="canvas-card flex flex-col">
+                            <div class="bg-slate-50 border-b border-slate-200 px-4 py-3">
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Evidence Accumulator</span>
+                            </div>
+                            <div class="flex-grow min-h-[300px] bg-white relative">
+                                <canvas id="ddmCanvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Bar -->
+                    <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+                        <div class="stat-badge">
+                            <span class="text-[10px] block text-slate-500 font-bold uppercase">Trials</span>
+                            <span id="trial-count" class="text-2xl font-black text-slate-800">0</span>
+                        </div>
+                        <div class="stat-badge">
+                            <span class="text-[10px] block text-slate-500 font-bold uppercase">Mean Accuracy</span>
+                            <span id="accuracy" class="text-2xl font-black text-green-600">0%</span>
+                        </div>
+                        <div class="stat-badge">
+                            <span class="text-[10px] block text-slate-500 font-bold uppercase">Avg Response Time</span>
+                            <span id="avg-rt" class="text-2xl font-black text-blue-600">0ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deep Dive Description -->
+        <article class="max-w-3xl mx-auto prose serif">
+            
+            <h2 class="text-slate-900">The Problem of Uncertainty</h2>
+            <p>
+                Every day, we make thousands of decisions based on noisy, incomplete information. Should you cross the street? Is that blurry figure a friend or a stranger? In the 1970s, psychologist Roger Ratcliff formalized a model to explain how we make these choices. This is the <strong>Drift Diffusion Model (DDM)</strong>.
+            </p>
+
+            <h2 class="text-slate-900">How the Model Works</h2>
+            <p>
+                The DDM assumes that decision-making is a process of <strong>evidence accumulation</strong>. Imagine a particle starting at a neutral point (zero). As you look at the moving dots above, your brain extracts small samples of information.
+            </p>
+            
+            <div class="bg-white border-l-4 border-blue-500 p-6 my-8 shadow-sm">
+                <p class="font-bold text-slate-800 mb-2 font-sans text-sm uppercase">The Mathematical Foundation</p>
+                <p class="mb-4">The position of the "evidence" at any time \(t\) is described by a stochastic differential equation:</p>
+                <div class="text-center py-4 bg-slate-50 rounded">
+                    $$dX = v \cdot dt + \sigma \cdot dW$$
+                </div>
+                <ul class="text-sm space-y-2 mt-4 font-sans text-slate-600 list-disc ml-5">
+                    <li><strong>\(v\) (Drift Rate):</strong> The average speed of accumulation. It represents the quality of the signal.</li>
+                    <li><strong>\(\sigma\) (Diffusion):</strong> The noise or randomness added at each step.</li>
+                    <li><strong>\(dW\):</strong> A Wiener process (white noise).</li>
+                </ul>
+            </div>
+
+            <h2 class="text-slate-900">The Three Key Parameters</h2>
+            
+            <h3 class="font-bold text-slate-800 text-xl mt-6 mb-2">1. Coherence (The Drift Rate)</h3>
+            <p>
+                In the "Random Dot Kinematogram" stimulus above, coherence is the percentage of dots moving in the same direction. In the brain, this is represented by neurons in the MT (Middle Temporal) area. High coherence creates a strong "Drift," pushing the evidence quickly toward a boundary.
+            </p>
+
+            <h3 class="font-bold text-slate-800 text-xl mt-6 mb-2">2. Boundary Separation (The Threshold)</h3>
+            <p>
+                The boundaries (the green and red lines) represent the amount of evidence required to commit to a choice. 
+                If you are cautious, your brain sets these boundaries far apart. If you are in a rush, you bring them closer. This leads to the famous <strong>Speed-Accuracy Tradeoff</strong>:
+            </p>
+            <ul class="list-disc ml-8 mb-6">
+                <li><strong>Narrow Boundaries:</strong> Faster decisions, but higher chance of noise accidentally pushing you into the wrong choice.</li>
+                <li><strong>Wide Boundaries:</strong> Slower decisions, but more robust against random fluctuations.</li>
+            </ul>
+
+            <h3 class="font-bold text-slate-800 text-xl mt-6 mb-2">3. Noise (The Diffusion)</h3>
+            <p>
+                Noise is the "zig-zag" in the path. It comes from two places: the external world (the random dots) and the internal brain (neural firing variability). Without noise, you would never make a mistake on a stimulus with a positive drift rate. Noise is the reason we sometimes choose "Down" even when the dots are clearly moving "Up."
+            </p>
+
+            <h2 class="text-slate-900">Neural Integration</h2>
+            <p>
+                Research in primates (notably by Newsome and Shadlen) found that neurons in the <strong>Lateral Intraparietal (LIP) area</strong> actually behave like the evidence accumulator in this model. Their firing rates increase steadily over time, exactly matching the predicted paths of the DDM, until they reach a certain "threshold" frequency that triggers a motor response.
+            </p>
+
+        </article>
+    </main>
+
+    <footer class="bg-slate-900 py-12 text-center text-slate-500 text-sm">
+        <p>Interactive Drift Diffusion Model Simulator &copy; 2024</p>
+        <p class="mt-2">Built for Cognitive Science Education</p>
+    </footer>
+
+    <script>
+        // --- CONSTANTS ---
+        const DOT_COUNT = 180;
+        const DOT_SIZE = 2;
+        const DOT_SPEED = 2.2;
+        
+        let stats = { trials: 0, correct: 0, totalRT: 0 };
+        let paths = [];
+        let currentPath = null;
+        let dots = [];
+
+        // --- ELEMENTS ---
+        const dotCanvas = document.getElementById('dotCanvas');
+        const dotCtx = dotCanvas.getContext('2d');
+        const ddmCanvas = document.getElementById('ddmCanvas');
+        const ddmCtx = ddmCanvas.getContext('2d');
+
+        const inputs = {
+            coherence: document.getElementById('coherence'),
+            noise: document.getElementById('noise'),
+            threshold: document.getElementById('threshold'),
+            speed: document.getElementById('speed'),
+            auto: document.getElementById('auto-run')
+        };
+
+        const labels = {
+            coherence: document.getElementById('coherence-val'),
+            noise: document.getElementById('noise-val'),
+            threshold: document.getElementById('threshold-val'),
+            speed: document.getElementById('speed-val'),
+            trial: document.getElementById('trial-count'),
+            accuracy: document.getElementById('accuracy'),
+            avgRT: document.getElementById('avg-rt'),
+            dotDir: document.getElementById('dot-dir')
+        };
+
+        // --- CORE LOGIC ---
+        function resize() {
+            dotCanvas.width = dotCanvas.parentElement.clientWidth;
+            dotCanvas.height = dotCanvas.width;
+            ddmCanvas.width = ddmCanvas.parentElement.clientWidth;
+            ddmCanvas.height = ddmCanvas.parentElement.clientHeight;
+            initDots();
+        }
+
+        function initDots() {
+            dots = [];
+            for (let i = 0; i < DOT_COUNT; i++) {
+                dots.push({
+                    x: Math.random() * dotCanvas.width,
+                    y: Math.random() * dotCanvas.height,
+                    life: Math.random() * 60
+                });
+            }
+        }
+
+        function createNewPath() {
+            return {
+                points: [{ x: 0, y: ddmCanvas.height / 2 }],
+                startTime: Date.now(),
+                tick: 0
+            };
+        }
+
+        function update() {
+            const coherence = parseInt(inputs.coherence.value) / 100;
+            const noise = parseFloat(inputs.noise.value);
+            const threshold = parseFloat(inputs.threshold.value);
+            const timeScale = parseFloat(inputs.speed.value);
+
+            labels.coherence.textContent = `${Math.abs(Math.round(coherence * 100))}%`;
+            labels.noise.textContent = noise.toFixed(2);
+            labels.threshold.textContent = threshold;
+            labels.speed.textContent = `${timeScale.toFixed(1)}x`;
+            labels.dotDir.textContent = coherence >= 0 ? "UPWARD" : "DOWNWARD";
+
+            // Update Dots
+            dots.forEach(dot => {
+                const isCoherent = Math.random() < Math.abs(coherence);
+                if (isCoherent) {
+                    dot.y -= (coherence > 0 ? DOT_SPEED : -DOT_SPEED) * timeScale;
+                } else {
+                    dot.x += (Math.random() - 0.5) * 5 * timeScale;
+                    dot.y += (Math.random() - 0.5) * 5 * timeScale;
+                }
+                if (dot.x < 0) dot.x = dotCanvas.width;
+                if (dot.x > dotCanvas.width) dot.x = 0;
+                if (dot.y < 0) dot.y = dotCanvas.height;
+                if (dot.y > dotCanvas.height) dot.y = 0;
+
+                dot.life -= 1 * timeScale;
+                if (dot.life <= 0) {
+                    dot.x = Math.random() * dotCanvas.width;
+                    dot.y = Math.random() * dotCanvas.height;
+                    dot.life = 40 + Math.random() * 40;
+                }
+            });
+
+            // Update DDM
+            if (!currentPath && inputs.auto.checked) currentPath = createNewPath();
+
+            if (currentPath) {
+                const last = currentPath.points[currentPath.points.length - 1];
+                const dt = 1.0 * timeScale;
+                const v = coherence * 1.8; 
+                const randomNoise = (Math.random() * 2 - 1) * noise * 8.5;
+                
+                const nextY = last.y - (v * dt) - (randomNoise * Math.sqrt(dt));
+                const nextX = last.x + (1.6 * dt);
+
+                currentPath.points.push({ x: nextX, y: nextY });
+                currentPath.tick += dt;
+
+                const midY = ddmCanvas.height / 2;
+                const topBound = midY - threshold;
+                const bottomBound = midY + threshold;
+
+                let done = false;
+                let correct = false;
+
+                if (nextY <= topBound) { done = true; correct = coherence >= 0; }
+                else if (nextY >= bottomBound) { done = true; correct = coherence < 0; }
+                else if (nextX >= ddmCanvas.width) { done = true; } // timeout
+
+                if (done) {
+                    if (nextX < ddmCanvas.width) {
+                        stats.trials++;
+                        if (correct) stats.correct++;
+                        stats.totalRT += currentPath.tick * 10; // Mock RT in ms
+                        
+                        labels.trial.textContent = stats.trials;
+                        labels.accuracy.textContent = `${Math.round((stats.correct / stats.trials) * 100)}%`;
+                        labels.avgRT.textContent = `${Math.round(stats.totalRT / stats.trials)}ms`;
+                    }
+                    paths.push(currentPath);
+                    if (paths.length > 8) paths.shift();
+                    currentPath = null;
+                }
+            }
+        }
+
+        function draw() {
+            // Draw Dots (Motion Blur effect)
+            dotCtx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+            dotCtx.fillRect(0, 0, dotCanvas.width, dotCanvas.height);
+            dotCtx.fillStyle = '#ffffff';
+            dots.forEach(dot => {
+                dotCtx.beginPath();
+                dotCtx.arc(dot.x, dot.y, DOT_SIZE, 0, Math.PI * 2);
+                dotCtx.fill();
+            });
+
+            // Draw DDM
+            ddmCtx.clearRect(0, 0, ddmCanvas.width, ddmCanvas.height);
+            const threshold = parseFloat(inputs.threshold.value);
+            const midY = ddmCanvas.height / 2;
+            const topBound = midY - threshold;
+            const bottomBound = midY + threshold;
+
+            // Boundaries
+            ddmCtx.setLineDash([6, 4]);
+            ddmCtx.lineWidth = 1.5;
+            ddmCtx.strokeStyle = '#10b981'; ddmCtx.beginPath(); ddmCtx.moveTo(0, topBound); ddmCtx.lineTo(ddmCanvas.width, topBound); ddmCtx.stroke();
+            ddmCtx.strokeStyle = '#f43f5e'; ddmCtx.beginPath(); ddmCtx.moveTo(0, bottomBound); ddmCtx.lineTo(ddmCanvas.width, bottomBound); ddmCtx.stroke();
+            
+            ddmCtx.setLineDash([]);
+            ddmCtx.strokeStyle = '#f1f5f9'; ddmCtx.beginPath(); ddmCtx.moveTo(0, midY); ddmCtx.lineTo(ddmCanvas.width, midY); ddmCtx.stroke();
+
+            // Trace Draw
+            paths.forEach(p => {
+                ddmCtx.strokeStyle = 'rgba(203, 213, 225, 0.4)';
+                ddmCtx.lineWidth = 1;
+                renderPath(ddmCtx, p);
+            });
+
+            if (currentPath) {
+                ddmCtx.strokeStyle = '#2563eb';
+                ddmCtx.lineWidth = 3;
+                ddmCtx.shadowBlur = 4;
+                ddmCtx.shadowColor = 'rgba(37, 99, 235, 0.3)';
+                renderPath(ddmCtx, currentPath);
+                ddmCtx.shadowBlur = 0;
+            }
+
+            update();
+            requestAnimationFrame(draw);
+        }
+
+        function renderPath(ctx, path) {
+            ctx.beginPath();
+            ctx.moveTo(path.points[0].x, path.points[0].y);
+            for (let i = 1; i < path.points.length; i++) {
+                ctx.lineTo(path.points[i].x, path.points[i].y);
+            }
+            ctx.stroke();
+        }
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            stats = { trials: 0, correct: 0, totalRT: 0 };
+            paths = []; currentPath = null;
+            labels.trial.textContent = "0";
+            labels.accuracy.textContent = "0%";
+            labels.avgRT.textContent = "0ms";
+        });
+
+        window.addEventListener('resize', resize);
+        resize();
+        draw();
+    </script>
+</body>
+</html>
