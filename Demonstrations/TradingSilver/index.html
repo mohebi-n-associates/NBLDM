@@ -463,7 +463,7 @@
 
                     path.push({ x: time + nonDecisionTime, y: evidence });
 
-                    if (Math.abs(evidence) >= boundary || time >= 3) {
+                    if (Math.abs(evidence) >= boundary || time >= 5) {
                         let decision;
                         if (evidence >= boundary) {
                             decision = 'BUY';
