@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /sessions/{sessionId}/allocations/{allocationId} {
+      // Allow anyone to read for the dashboard (in a real app, you'd restrict this)
+      allow read: if true;
+      
+      // Allow creation only if total is exactly 100 and it has 5 values
+      allow create: if 
+        request.resource.data.total == 100 &&
+        request.resource.data.values.size() == 5;
+    }
+  }
+}

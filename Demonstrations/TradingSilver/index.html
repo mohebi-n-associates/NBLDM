@@ -397,7 +397,7 @@
 
             // Draw History (faint)
             history.forEach((trial) => {
-                ctx.strokeStyle = 'rgba(148, 163, 184, 0.8)';
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 trial.path.forEach((p, i) => {
@@ -476,7 +476,7 @@
                         currentTrial = { path, decision, time: finalTime };
 
                         history.unshift(currentTrial);
-                        if (history.length > 5) history.pop();
+                        if (history.length > 20) history.pop();
 
                         stats.totalCount++;
                         if (decision === 'BUY') {

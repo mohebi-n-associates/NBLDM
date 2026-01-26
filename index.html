@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NLDM | Neurobiology of Learning & Decision Making</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -53,15 +56,25 @@
             width: 200%;
             height: 200%;
             background: radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+                radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
             animation: bgFloat 20s ease-in-out infinite;
         }
 
         @keyframes bgFloat {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(2%, 2%) rotate(1deg); }
-            66% { transform: translate(-1%, 1%) rotate(-1deg); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(2%, 2%) rotate(1deg);
+            }
+
+            66% {
+                transform: translate(-1%, 1%) rotate(-1deg);
+            }
         }
 
         /* Neural network animation */
@@ -211,34 +224,66 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 0.8;
+            }
         }
 
         .floating-element {
             position: absolute;
             background: var(--dark-light);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             padding: 1rem 1.25rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             animation: float 4s ease-in-out infinite;
         }
 
-        .floating-element:nth-child(2) { animation-delay: -1s; }
-        .floating-element:nth-child(3) { animation-delay: -2s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .floating-element:nth-child(2) {
+            animation-delay: -1s;
         }
 
-        .float-1 { top: 10%; right: 10%; }
-        .float-2 { bottom: 20%; left: 0; }
-        .float-3 { top: 60%; right: 0; }
+        .floating-element:nth-child(3) {
+            animation-delay: -2s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .float-1 {
+            top: 10%;
+            right: 10%;
+        }
+
+        .float-2 {
+            bottom: 20%;
+            left: 0;
+        }
+
+        .float-3 {
+            top: 60%;
+            right: 0;
+        }
 
         .floating-element .icon {
             width: 36px;
@@ -249,9 +294,20 @@
             justify-content: center;
         }
 
-        .icon-purple { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
-        .icon-pink { background: rgba(236, 72, 153, 0.2); color: var(--secondary); }
-        .icon-cyan { background: rgba(6, 182, 212, 0.2); color: var(--accent); }
+        .icon-purple {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+        }
+
+        .icon-pink {
+            background: rgba(236, 72, 153, 0.2);
+            color: var(--secondary);
+        }
+
+        .icon-cyan {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--accent);
+        }
 
         .floating-element .text {
             font-size: 0.8rem;
@@ -312,7 +368,7 @@
 
         .experiment-card {
             background: linear-gradient(135deg, var(--dark-light), rgba(30, 41, 59, 0.5));
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 2rem;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -338,7 +394,7 @@
         .experiment-card:hover {
             transform: translateY(-8px);
             border-color: rgba(99, 102, 241, 0.3);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
         }
 
         .experiment-card:hover::before {
@@ -364,14 +420,37 @@
             opacity: 0.15;
         }
 
-        .card-icon.purple { background: rgba(99, 102, 241, 0.15); }
-        .card-icon.purple::after { background: var(--primary); }
-        .card-icon.pink { background: rgba(236, 72, 153, 0.15); }
-        .card-icon.pink::after { background: var(--secondary); }
-        .card-icon.cyan { background: rgba(6, 182, 212, 0.15); }
-        .card-icon.cyan::after { background: var(--accent); }
-        .card-icon.green { background: rgba(34, 197, 94, 0.15); }
-        .card-icon.green::after { background: #22c55e; }
+        .card-icon.purple {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .card-icon.purple::after {
+            background: var(--primary);
+        }
+
+        .card-icon.pink {
+            background: rgba(236, 72, 153, 0.15);
+        }
+
+        .card-icon.pink::after {
+            background: var(--secondary);
+        }
+
+        .card-icon.cyan {
+            background: rgba(6, 182, 212, 0.15);
+        }
+
+        .card-icon.cyan::after {
+            background: var(--accent);
+        }
+
+        .card-icon.green {
+            background: rgba(34, 197, 94, 0.15);
+        }
+
+        .card-icon.green::after {
+            background: #22c55e;
+        }
 
         .card-badge {
             position: absolute;
@@ -417,7 +496,7 @@
         .card-tag {
             font-size: 0.75rem;
             padding: 0.35rem 0.75rem;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 50px;
             color: var(--gray);
         }
@@ -429,7 +508,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -456,7 +535,7 @@
 
         .demo-item {
             background: linear-gradient(135deg, var(--dark-light), rgba(30, 41, 59, 0.5));
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 2.5rem;
             position: relative;
@@ -569,7 +648,7 @@
 
         .demo-iframe {
             background: var(--dark);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             overflow: hidden;
             position: relative;
@@ -695,7 +774,7 @@
 
         .code-block {
             background: var(--dark);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             padding: 1.5rem;
             font-family: 'Fira Code', monospace;
@@ -708,7 +787,7 @@
             gap: 0.5rem;
             margin-bottom: 1rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .code-dot {
@@ -717,23 +796,42 @@
             border-radius: 50%;
         }
 
-        .dot-red { background: #ff5f56; }
-        .dot-yellow { background: #ffbd2e; }
-        .dot-green { background: #27ca40; }
+        .dot-red {
+            background: #ff5f56;
+        }
+
+        .dot-yellow {
+            background: #ffbd2e;
+        }
+
+        .dot-green {
+            background: #27ca40;
+        }
 
         .code-content {
             color: var(--gray);
             line-height: 1.8;
         }
 
-        .code-content .keyword { color: var(--secondary); }
-        .code-content .function { color: var(--accent); }
-        .code-content .string { color: #a5d6ff; }
-        .code-content .comment { color: #6e7681; }
+        .code-content .keyword {
+            color: var(--secondary);
+        }
+
+        .code-content .function {
+            color: var(--accent);
+        }
+
+        .code-content .string {
+            color: #a5d6ff;
+        }
+
+        .code-content .comment {
+            color: #6e7681;
+        }
 
         /* Footer */
         footer {
-            border-top: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
             padding: 3rem 2rem;
             text-align: center;
         }
@@ -806,6 +904,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="bg-animation"></div>
 
@@ -814,8 +913,9 @@
         <a href="#" class="logo">
             <div class="logo-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <path d="M12 2a9 9 0 0 1 9 9c0 3.6-3.4 6.2-5.5 8.5-1.1 1.2-2.3 2.5-3.5 2.5s-2.4-1.3-3.5-2.5C6.4 17.2 3 14.6 3 11a9 9 0 0 1 9-9z"/>
-                    <circle cx="12" cy="10" r="3"/>
+                    <path
+                        d="M12 2a9 9 0 0 1 9 9c0 3.6-3.4 6.2-5.5 8.5-1.1 1.2-2.3 2.5-3.5 2.5s-2.4-1.3-3.5-2.5C6.4 17.2 3 14.6 3 11a9 9 0 0 1 9-9z" />
+                    <circle cx="12" cy="10" r="3" />
                 </svg>
             </div>
             <span class="logo-text">NLDM</span>
@@ -832,8 +932,9 @@
     <section class="hero">
         <div class="hero-content">
             <h1>Explore the <span>Neurobiology</span> of Learning & Decision Making</h1>
-            <p>Interactive experiments that let you experience classic paradigms from cognitive science and neuroscience research. Test your perception, learning, and decision-making — then see how you compare.</p>
-            
+            <p>Interactive experiments that let you experience classic paradigms from cognitive science and neuroscience
+                research. Test your perception, learning, and decision-making — then see how you compare.</p>
+
             <div class="hero-stats">
                 <div class="stat">
                     <div class="stat-number">4+</div>
@@ -853,7 +954,7 @@
         <div class="hero-graphic">
             <div class="brain-container">
                 <div class="brain-glow"></div>
-                
+
                 <!-- Central Brain SVG -->
                 <svg viewBox="0 0 200 200" style="width: 100%; height: 100%;">
                     <defs>
@@ -863,34 +964,37 @@
                         </linearGradient>
                     </defs>
                     <!-- Simplified brain outline -->
-                    <path d="M100 30 C60 30 40 60 40 90 C40 120 50 140 70 155 C75 175 90 180 100 180 C110 180 125 175 130 155 C150 140 160 120 160 90 C160 60 140 30 100 30" 
-                          fill="none" stroke="url(#brainGrad)" stroke-width="2" opacity="0.6"/>
+                    <path
+                        d="M100 30 C60 30 40 60 40 90 C40 120 50 140 70 155 C75 175 90 180 100 180 C110 180 125 175 130 155 C150 140 160 120 160 90 C160 60 140 30 100 30"
+                        fill="none" stroke="url(#brainGrad)" stroke-width="2" opacity="0.6" />
                     <!-- Neural connections -->
                     <g stroke="url(#brainGrad)" stroke-width="1" fill="none" opacity="0.4">
-                        <circle cx="70" cy="70" r="8"/>
-                        <circle cx="130" cy="70" r="8"/>
-                        <circle cx="100" cy="100" r="10"/>
-                        <circle cx="80" cy="130" r="6"/>
-                        <circle cx="120" cy="130" r="6"/>
-                        <line x1="70" y1="70" x2="100" y2="100"/>
-                        <line x1="130" y1="70" x2="100" y2="100"/>
-                        <line x1="100" y1="100" x2="80" y2="130"/>
-                        <line x1="100" y1="100" x2="120" y2="130"/>
-                        <line x1="70" y1="70" x2="130" y2="70"/>
+                        <circle cx="70" cy="70" r="8" />
+                        <circle cx="130" cy="70" r="8" />
+                        <circle cx="100" cy="100" r="10" />
+                        <circle cx="80" cy="130" r="6" />
+                        <circle cx="120" cy="130" r="6" />
+                        <line x1="70" y1="70" x2="100" y2="100" />
+                        <line x1="130" y1="70" x2="100" y2="100" />
+                        <line x1="100" y1="100" x2="80" y2="130" />
+                        <line x1="100" y1="100" x2="120" y2="130" />
+                        <line x1="70" y1="70" x2="130" y2="70" />
                     </g>
                     <!-- Animated pulse circles -->
-                    <circle cx="100" cy="100" r="30" fill="none" stroke="url(#brainGrad)" stroke-width="1" opacity="0.3">
-                        <animate attributeName="r" values="30;50;30" dur="3s" repeatCount="indefinite"/>
-                        <animate attributeName="opacity" values="0.3;0.1;0.3" dur="3s" repeatCount="indefinite"/>
+                    <circle cx="100" cy="100" r="30" fill="none" stroke="url(#brainGrad)" stroke-width="1"
+                        opacity="0.3">
+                        <animate attributeName="r" values="30;50;30" dur="3s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.3;0.1;0.3" dur="3s" repeatCount="indefinite" />
                     </circle>
                 </svg>
 
                 <!-- Floating elements -->
                 <div class="floating-element float-1">
                     <div class="icon icon-purple">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 6v6l4 2"/>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v6l4 2" />
                         </svg>
                     </div>
                     <div class="text">
@@ -901,8 +1005,9 @@
 
                 <div class="floating-element float-2">
                     <div class="icon icon-pink">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                         </svg>
                     </div>
                     <div class="text">
@@ -913,11 +1018,12 @@
 
                 <div class="floating-element float-3">
                     <div class="icon icon-cyan">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
                     </div>
                     <div class="text">
@@ -934,7 +1040,8 @@
         <div class="section-header">
             <span class="section-tag">🎓 Interactive Demonstrations</span>
             <h2>Demonstrations</h2>
-            <p>Visual explanations of key concepts in cognitive neuroscience. Watch, interact, and build intuition for how the brain makes decisions.</p>
+            <p>Visual explanations of key concepts in cognitive neuroscience. Watch, interact, and build intuition for
+                how the brain makes decisions.</p>
         </div>
 
         <div class="demonstrations-grid">
@@ -949,8 +1056,10 @@
                 </div>
                 <div class="demo-content">
                     <div class="demo-text">
-                        <p>Should you buy the silver? This demonstration shows how the brain weighs subjective value against market price, accumulating evidence until reaching a decision threshold.</p>
-                        <p>Watch evidence evolve in real-time as the "drift rate" (value minus price) pulls the signal toward a BUY or DON'T BUY decision boundary.</p>
+                        <p>Should you buy the silver? This demonstration shows how the brain weighs subjective value
+                            against market price, accumulating evidence until reaching a decision threshold.</p>
+                        <p>Watch evidence evolve in real-time as the "drift rate" (value minus price) pulls the signal
+                            toward a BUY or DON'T BUY decision boundary.</p>
                         <ul>
                             <li>Drift rate = Subjective Value − Market Price</li>
                             <li>Caution threshold controls speed-accuracy tradeoff</li>
@@ -959,8 +1068,9 @@
                         </ul>
                         <a href="./Demonstrations/TradingSilver/" target="_blank" class="demo-launch-btn">
                             Launch Interactive Demo
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
                             </svg>
                         </a>
                     </div>
@@ -970,10 +1080,11 @@
                             <span>Interactive Demo</span>
                             <a href="./Demonstrations/TradingSilver/" target="_blank">
                                 Open Full Screen
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                    <polyline points="15 3 21 3 21 9"/>
-                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                    <polyline points="15 3 21 3 21 9" />
+                                    <line x1="10" y1="14" x2="21" y2="3" />
                                 </svg>
                             </a>
                         </div>
@@ -992,8 +1103,11 @@
                 </div>
                 <div class="demo-content">
                     <div class="demo-text">
-                        <p>How does the brain decide what we perceive? The Drift Diffusion Model (DDM) reveals the neural mechanisms of perceptual decisions—particularly how the brain accumulates noisy sensory evidence over time until reaching a decision threshold.</p>
-                        <p>Watch the random dot motion stimulus and see how the brain's "evidence accumulator" integrates information until it commits to a choice.</p>
+                        <p>How does the brain decide what we perceive? The Drift Diffusion Model (DDM) reveals the
+                            neural mechanisms of perceptual decisions—particularly how the brain accumulates noisy
+                            sensory evidence over time until reaching a decision threshold.</p>
+                        <p>Watch the random dot motion stimulus and see how the brain's "evidence accumulator"
+                            integrates information until it commits to a choice.</p>
                         <ul>
                             <li>Coherence controls the drift rate (signal strength)</li>
                             <li>Threshold determines the speed-accuracy tradeoff</li>
@@ -1002,8 +1116,9 @@
                         </ul>
                         <a href="./Demonstrations/DriftDiffusionModel/" target="_blank" class="demo-launch-btn">
                             Launch Interactive Demo
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
                             </svg>
                         </a>
                     </div>
@@ -1013,10 +1128,11 @@
                             <span>Interactive Demo</span>
                             <a href="./Demonstrations/DriftDiffusionModel/" target="_blank">
                                 Open Full Screen
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                    <polyline points="15 3 21 3 21 9"/>
-                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                    <polyline points="15 3 21 3 21 9" />
+                                    <line x1="10" y1="14" x2="21" y2="3" />
                                 </svg>
                             </a>
                         </div>
@@ -1034,28 +1150,60 @@
         <div class="section-header">
             <span class="section-tag">🧪 Interactive Labs</span>
             <h2>Choose Your Experiment</h2>
-            <p>Each experiment is designed to illustrate key concepts in perception, learning, and decision-making. Run them yourself and explore the data.</p>
+            <p>Each experiment is designed to illustrate key concepts in perception, learning, and decision-making. Run
+                them yourself and explore the data.</p>
         </div>
 
         <div class="experiments-grid">
+            <!-- Real-Time Allocation -->
+            <div class="experiment-card">
+                <span class="card-badge badge-live">New</span>
+                <div class="card-icon" style="background: rgba(249, 115, 22, 0.15);">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2">
+                        <path d="M18 20V10" />
+                        <path d="M12 20V4" />
+                        <path d="M6 20v-6" />
+                    </svg>
+                </div>
+                <h3>Real-Time Allocation</h3>
+                <p>Interactive classroom poll. Distribute 100 points across 5 categories and see the class consensus in
+                    real-time.</p>
+                <div class="card-tags">
+                    <span class="card-tag">Classroom</span>
+                    <span class="card-tag">Poll</span>
+                    <span class="card-tag">Real-time</span>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <a href="./ClassPolls/RealTimeAllocation/dist/index.html" class="demo-launch-btn"
+                        style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        Join Poll
+                    </a>
+                    <a href="./ClassPolls/RealTimeAllocation/dist/index.html#/dashboard"
+                        style="color: var(--gray); font-size: 0.9rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                        View Dashboard →
+                    </a>
+                </div>
+            </div>
+
             <!-- Random Dot Motion -->
             <a href="./RandomDotMotionTask/" class="experiment-card">
                 <span class="card-badge badge-live">Live</span>
                 <div class="card-icon purple">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
-                        <circle cx="12" cy="12" r="1"/>
-                        <circle cx="19" cy="12" r="1"/>
-                        <circle cx="5" cy="12" r="1"/>
-                        <circle cx="12" cy="5" r="1"/>
-                        <circle cx="12" cy="19" r="1"/>
-                        <circle cx="7" cy="7" r="1"/>
-                        <circle cx="17" cy="17" r="1"/>
-                        <circle cx="17" cy="7" r="1"/>
-                        <circle cx="7" cy="17" r="1"/>
+                        <circle cx="12" cy="12" r="1" />
+                        <circle cx="19" cy="12" r="1" />
+                        <circle cx="5" cy="12" r="1" />
+                        <circle cx="12" cy="5" r="1" />
+                        <circle cx="12" cy="19" r="1" />
+                        <circle cx="7" cy="7" r="1" />
+                        <circle cx="17" cy="17" r="1" />
+                        <circle cx="17" cy="7" r="1" />
+                        <circle cx="7" cy="17" r="1" />
                     </svg>
                 </div>
                 <h3>Random Dot Motion</h3>
-                <p>The classic perceptual decision-making paradigm. Detect coherent motion in noisy dot fields and experience how the brain accumulates evidence over time.</p>
+                <p>The classic perceptual decision-making paradigm. Detect coherent motion in noisy dot fields and
+                    experience how the brain accumulates evidence over time.</p>
                 <div class="card-tags">
                     <span class="card-tag">Perception</span>
                     <span class="card-tag">Evidence Accumulation</span>
@@ -1063,7 +1211,7 @@
                 </div>
                 <div class="card-arrow">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                        <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                 </div>
             </a>
@@ -1073,16 +1221,17 @@
                 <span class="card-badge badge-soon">Coming Soon</span>
                 <div class="card-icon pink">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="18" rx="2"/>
-                        <rect x="14" y="3" width="7" height="18" rx="2"/>
-                        <line x1="6.5" y1="8" x2="6.5" y2="8"/>
-                        <line x1="17.5" y1="8" x2="17.5" y2="8"/>
-                        <circle cx="6.5" cy="12" r="1.5"/>
-                        <circle cx="17.5" cy="12" r="1.5"/>
+                        <rect x="3" y="3" width="7" height="18" rx="2" />
+                        <rect x="14" y="3" width="7" height="18" rx="2" />
+                        <line x1="6.5" y1="8" x2="6.5" y2="8" />
+                        <line x1="17.5" y1="8" x2="17.5" y2="8" />
+                        <circle cx="6.5" cy="12" r="1.5" />
+                        <circle cx="17.5" cy="12" r="1.5" />
                     </svg>
                 </div>
                 <h3>Two-Armed Bandit</h3>
-                <p>Explore the exploration-exploitation tradeoff. Learn which option pays out more while balancing the need to gather information vs. maximize rewards.</p>
+                <p>Explore the exploration-exploitation tradeoff. Learn which option pays out more while balancing the
+                    need to gather information vs. maximize rewards.</p>
                 <div class="card-tags">
                     <span class="card-tag">Reinforcement Learning</span>
                     <span class="card-tag">Explore vs Exploit</span>
@@ -1095,13 +1244,14 @@
                 <span class="card-badge badge-soon">Coming Soon</span>
                 <div class="card-icon cyan">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
-                        <path d="M4 7V4h16v3"/>
-                        <path d="M9 20h6"/>
-                        <path d="M12 4v16"/>
+                        <path d="M4 7V4h16v3" />
+                        <path d="M9 20h6" />
+                        <path d="M12 4v16" />
                     </svg>
                 </div>
                 <h3>Stroop Task</h3>
-                <p>Experience cognitive interference firsthand. Name ink colors while ignoring word meanings and discover the limits of attentional control.</p>
+                <p>Experience cognitive interference firsthand. Name ink colors while ignoring word meanings and
+                    discover the limits of attentional control.</p>
                 <div class="card-tags">
                     <span class="card-tag">Cognitive Control</span>
                     <span class="card-tag">Interference</span>
@@ -1114,15 +1264,16 @@
                 <span class="card-badge badge-soon">Coming Soon</span>
                 <div class="card-icon green">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
-                        <rect x="3" y="3" width="6" height="8" rx="1"/>
-                        <rect x="15" y="3" width="6" height="8" rx="1"/>
-                        <rect x="9" y="13" width="6" height="8" rx="1"/>
-                        <circle cx="6" cy="7" r="1"/>
-                        <path d="M16 5l3 3-3 3"/>
+                        <rect x="3" y="3" width="6" height="8" rx="1" />
+                        <rect x="15" y="3" width="6" height="8" rx="1" />
+                        <rect x="9" y="13" width="6" height="8" rx="1" />
+                        <circle cx="6" cy="7" r="1" />
+                        <path d="M16 5l3 3-3 3" />
                     </svg>
                 </div>
                 <h3>Rule Learning Task</h3>
-                <p>Discover hidden rules through trial and error, then adapt when the rules suddenly change. A test of cognitive flexibility and hypothesis testing.</p>
+                <p>Discover hidden rules through trial and error, then adapt when the rules suddenly change. A test of
+                    cognitive flexibility and hypothesis testing.</p>
                 <div class="card-tags">
                     <span class="card-tag">Cognitive Flexibility</span>
                     <span class="card-tag">Rule Learning</span>
@@ -1137,14 +1288,16 @@
         <div class="about-content">
             <div class="about-text">
                 <h2>Learn by Doing</h2>
-                <p>These experiments aren't just demonstrations—they're tools for exploring how your own mind works. Each paradigm comes from decades of cognitive neuroscience research.</p>
-                <p>Run an experiment, see your results, and compare your performance against everyone else who has participated. The data updates in real-time.</p>
-                
+                <p>These experiments aren't just demonstrations—they're tools for exploring how your own mind works.
+                    Each paradigm comes from decades of cognitive neuroscience research.</p>
+                <p>Run an experiment, see your results, and compare your performance against everyone else who has
+                    participated. The data updates in real-time.</p>
+
                 <div class="features-list">
                     <div class="feature-item">
                         <div class="feature-icon">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                                <polyline points="20 6 9 17 4 12"/>
+                                <polyline points="20 6 9 17 4 12" />
                             </svg>
                         </div>
                         <span>No downloads — runs entirely in your browser</span>
@@ -1152,7 +1305,7 @@
                     <div class="feature-item">
                         <div class="feature-icon">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                                <polyline points="20 6 9 17 4 12"/>
+                                <polyline points="20 6 9 17 4 12" />
                             </svg>
                         </div>
                         <span>Real-time population histograms and percentiles</span>
@@ -1160,7 +1313,7 @@
                     <div class="feature-item">
                         <div class="feature-icon">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                                <polyline points="20 6 9 17 4 12"/>
+                                <polyline points="20 6 9 17 4 12" />
                             </svg>
                         </div>
                         <span>Adjustable parameters to explore effects</span>
@@ -1168,7 +1321,7 @@
                     <div class="feature-item">
                         <div class="feature-icon">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                                <polyline points="20 6 9 17 4 12"/>
+                                <polyline points="20 6 9 17 4 12" />
                             </svg>
                         </div>
                         <span>Open source — fork and create your own</span>
@@ -1202,7 +1355,10 @@
     <!-- Footer -->
     <footer>
         <p>Built for the <strong>Neurobiology of Learning & Decision Making</strong> course<br>
-        <a href="https://github.com/mohebi-n-associates/NLDM" target="_blank">View on GitHub</a> · Fork to create your own experiments</p>
+            <a href="https://github.com/mohebi-n-associates/NLDM" target="_blank">View on GitHub</a> · Fork to create
+            your own experiments
+        </p>
     </footer>
 </body>
+
 </html>
