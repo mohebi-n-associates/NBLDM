@@ -5,9 +5,9 @@ service cloud.firestore {
       // Allow anyone to read for the dashboard (in a real app, you'd restrict this)
       allow read: if true;
       
-      // Allow creation only if total is exactly 100 and it has 5 values
+      // Allow creation only if total is approximately 100 (handling floating point) and it has 5 values
       allow create: if 
-        request.resource.data.total == 100 &&
+        request.resource.data.total >= 99 && request.resource.data.total <= 101 &&
         request.resource.data.values.size() == 5;
     }
   }
