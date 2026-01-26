@@ -26,11 +26,18 @@ export default function StudentView() {
     };
 
     const handleSubmit = async () => {
-        if (total !== 100) return;
+        if (total === 0) {
+            alert("Please allocate at least some points.");
+            return;
+        }
         setLoading(true);
 
         try {
             console.log("Starting submission...");
+            // Normalize values to sum to ~100
+            const normalizedValues = values.map(v => parseFloat(((v / total) * 100).toFixed(1)));
+            const normalizedTotal = normalizedValues.reduce((a, b) => a + b, 0);
+
             // Use a fixed session ID for now
             const sessionId = 'class_01';
 
@@ -42,8 +49,9 @@ export default function StudentView() {
             // Race the network request against the timeout
             await Promise.race([
                 addDoc(collection(db, 'sessions', sessionId, 'allocations'), {
-                    values: values,
-                    total: total,
+                    values: normalizedValues,
+                    total: normalizedTotal, // Should be ~100
+                    originalTotal: total, // Keep track of what they actually entered
                     createdAt: serverTimestamp()
                 }),
                 timeout
@@ -67,12 +75,12 @@ export default function StudentView() {
                     <h2 className="text-2xl font-bold text-green-600 mb-4">Submission Received!</h2>
                     <p className="text-gray-600">Thank you for participating.</p>
                     <div className="mt-6">
-                        <p className="text-sm text-gray-500">Your allocation:</p>
+                        <p className="text-sm text-gray-500">Your allocation (normalized):</p>
                         <div className="mt-2 space-y-2">
                             {Sections.map((label, i) => (
                                 <div key={i} className="flex justify-between text-xs">
                                     <span>{label}</span>
-                                    <span className="font-medium">{values[i]}%</span>
+                                    <span className="font-medium">{parseFloat(((values[i] / total) * 100).toFixed(1))}%</span>
                                 </div>
                             ))}
                         </div>
@@ -92,7 +100,7 @@ export default function StudentView() {
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-6">
                 <header className="text-center">
                     <h1 className="text-2xl font-bold text-gray-800">Class Allocation</h1>
-                    <p className="text-sm text-gray-500">Distribute 100 points across the sections.</p>
+                    <p className="text-sm text-gray-500">Distribute points in proportion.</p>
                 </header>
 
                 <div className="space-y-6">
@@ -100,7 +108,12 @@ export default function StudentView() {
                         <div key={index} className="space-y-2">
                             <div className="flex justify-between items-center">
                                 <label className="text-sm font-medium text-gray-700">{label}</label>
-                                <span className={`text-sm font-bold ${values[index] > 100 ? 'text-red-500' : 'text-blue-600'}`}>{values[index]}</span>
+                                <span className={`text-sm font-bold text-blue-600`}>
+                                    {values[index]}
+                                    <span className="text-gray-300 font-normal ml-1">
+                                        ({total > 0 ? ((values[index] / total) * 100).toFixed(0) : 0}%)
+                                    </span>
+                                </span>
                             </div>
                             <input
                                 type="range"
@@ -116,23 +129,17 @@ export default function StudentView() {
 
                 <div className="pt-4 border-t border-gray-100">
                     <div className="flex justify-between items-center mb-4">
-                        <span className="text-gray-600">Total Allocated:</span>
-                        <span className={`text-xl font-bold ${total === 100 ? 'text-green-600' : 'text-red-500'}`}>
-                            {total} / 100
+                        <span className="text-gray-600">Total Points:</span>
+                        <span className="text-xl font-bold text-blue-600">
+                            {total}
                         </span>
                     </div>
 
-                    {total !== 100 && (
-                        <p className="text-xs text-center text-red-500 mb-3 font-medium">
-                            Total must be exactly 100 to submit.
-                        </p>
-                    )}
-
                     <button
                         onClick={handleSubmit}
-                        disabled={total !== 100 || loading}
+                        disabled={total === 0 || loading}
                         className={`w-full py-3 rounded-xl font-bold text-white transition-all
-              ${total === 100 && !loading
+              ${total > 0 && !loading
                                 ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
                                 : 'bg-gray-300 cursor-not-allowed'
                             }`}
