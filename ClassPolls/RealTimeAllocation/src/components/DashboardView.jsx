@@ -27,19 +27,46 @@ export default function DashboardView() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // Listen to the specific session's allocations
+    const [error, setError] = useState(null);
+
+    const loadData = () => {
+        setLoading(true);
+        setError(null);
+
         const q = query(collection(db, 'sessions', 'class_01', 'allocations'), orderBy('createdAt', 'desc'));
+
+        // Timeout check
+        const timeoutId = setTimeout(() => {
+            setLoading((currentLoading) => {
+                if (currentLoading) {
+                    setError("Connection taking too long. Check your internet or firewall.");
+                    return false;
+                }
+                return currentLoading;
+            });
+        }, 8000);
+
         const unsubscribe = onSnapshot(q, (snapshot) => {
+            clearTimeout(timeoutId);
             const submissions = snapshot.docs.map(doc => doc.data());
             setData(submissions);
             setLoading(false);
-        }, (error) => {
-            console.error("Error fetching data:", error);
+        }, (err) => {
+            clearTimeout(timeoutId);
+            console.error("Error fetching data:", err);
+            setError(err.message);
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            clearTimeout(timeoutId);
+            unsubscribe();
+        };
+    };
+
+    useEffect(() => {
+        const cleanup = loadData();
+        return cleanup;
     }, []);
 
     const generateHistogramData = (sectionIndex) => {
@@ -118,6 +145,24 @@ export default function DashboardView() {
     if (loading) return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
             <div className="text-xl text-gray-600 animate-pulse">Loading live results...</div>
+        </div>
+    );
+
+    if (error) return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
+                <div className="text-red-500 mb-4">
+                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Connection Issue</h2>
+                <p className="text-gray-600 mb-6">{error}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                    Retry
+                </button>
+            </div>
         </div>
     );
 
