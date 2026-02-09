@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,15 +10,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    
+
     <style>
-        body { margin: 0; }
-        
+        body {
+            margin: 0;
+        }
+
         /* Dual-thumb range slider styling */
         input[type="range"] {
             -webkit-appearance: none;
@@ -25,7 +28,7 @@
             background: transparent;
             cursor: pointer;
         }
-        
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -38,7 +41,7 @@
             position: relative;
             z-index: 3;
         }
-        
+
         input[type="range"]::-moz-range-thumb {
             width: 18px;
             height: 18px;
@@ -49,16 +52,17 @@
             position: relative;
             z-index: 3;
         }
-        
+
         input[type="range"]:focus::-webkit-slider-thumb {
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
-        
+
         input[type="range"]:focus::-moz-range-thumb {
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
     </style>
 </head>
+
 <body>
     <div id="root"></div>
 
@@ -76,24 +80,24 @@
         ║  6. Replace the config below with your values                             ║
         ╚═══════════════════════════════════════════════════════════════════════════╝
         */
-        
+
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
-          apiKey: "AIzaSyBEnZxDo-N3ZKGbA1nAD64jzPWtMviA-nw",
-          authDomain: "randomdotmotiontask-778bf.firebaseapp.com",
-          projectId: "randomdotmotiontask-778bf",
-          storageBucket: "randomdotmotiontask-778bf.firebasestorage.app",
-          messagingSenderId: "360791624435",
-          appId: "1:360791624435:web:b59fb9877409e3cc7cc586",
-          measurementId: "G-17EB8MY2KB"
+            apiKey: "AIzaSyBEnZxDo-N3ZKGbA1nAD64jzPWtMviA-nw",
+            authDomain: "randomdotmotiontask-778bf.firebaseapp.com",
+            projectId: "randomdotmotiontask-778bf",
+            storageBucket: "randomdotmotiontask-778bf.firebasestorage.app",
+            messagingSenderId: "360791624435",
+            appId: "1:360791624435:web:b59fb9877409e3cc7cc586",
+            measurementId: "G-17EB8MY2KB"
         };
-        
+
         // Check if Firebase is configured
         const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
-        
+
         let db = null;
         let auth = null;
-        
+
         if (isFirebaseConfigured) {
             try {
                 firebase.initializeApp(firebaseConfig);
@@ -120,17 +124,17 @@
         // ═══════════════════════════════════════════════════════════════
         const Histogram = ({ data, userValue, label, color, unit = "" }) => {
             const canvasRef = useRef(null);
-            
+
             useEffect(() => {
                 if (!canvasRef.current || data.length === 0) return;
-                
+
                 const ctx = canvasRef.current.getContext('2d');
-                
+
                 // Destroy existing chart
                 if (canvasRef.current.chart) {
                     canvasRef.current.chart.destroy();
                 }
-                
+
                 // Create histogram bins
                 const min = Math.min(...data);
                 const max = Math.max(...data);
@@ -138,29 +142,29 @@
                 const binWidth = (max - min) / binCount || 1;
                 const bins = Array(binCount).fill(0);
                 const binLabels = [];
-                
+
                 for (let i = 0; i < binCount; i++) {
                     const binStart = min + i * binWidth;
                     const binEnd = min + (i + 1) * binWidth;
                     binLabels.push(`${binStart.toFixed(0)}${unit}`);
-                    
+
                     data.forEach(val => {
                         if (val >= binStart && (val < binEnd || (i === binCount - 1 && val <= binEnd))) {
                             bins[i]++;
                         }
                     });
                 }
-                
+
                 // Find which bin the user falls into
                 const userBin = Math.min(
                     Math.floor((userValue - min) / binWidth),
                     binCount - 1
                 );
-                
-                const backgroundColors = bins.map((_, i) => 
+
+                const backgroundColors = bins.map((_, i) =>
                     i === userBin ? '#f59e0b' : color
                 );
-                
+
                 canvasRef.current.chart = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -202,14 +206,14 @@
                         }
                     }
                 });
-                
+
                 return () => {
                     if (canvasRef.current?.chart) {
                         canvasRef.current.chart.destroy();
                     }
                 };
             }, [data, userValue, label, color, unit]);
-            
+
             return (
                 <div className="h-48">
                     <canvas ref={canvasRef}></canvas>
@@ -223,22 +227,23 @@
         const PerformanceHistograms = ({ trials }) => {
             const byCoherenceCanvasRef = useRef(null);
             const byDurationCanvasRef = useRef(null);
-            
+
             useEffect(() => {
                 if (!trials || trials.length === 0) return;
-                
+
                 // Prepare data for performance by coherence
-                const coherenceBins = [0, 0.1, 0.2, 0.3, 0.4, 0.5];
-                const durationBins = [250, 400, 550, 700, 850, 1000];
-                
+                // Bins optimized for discrete values: 0, 0.05, 0.1, 0.2
+                const coherenceBins = [0, 0.02, 0.07, 0.15, 0.25, 0.5];
+                const durationBins = [250, 500, 750, 1000, 1500, 2000, 3000];
+
                 // Create performance data grouped by coherence (averaging across durations)
                 const performanceByCoherence = [];
-                
+
                 for (let i = 0; i < coherenceBins.length - 1; i++) {
-                    const trialsInBin = trials.filter(t => 
+                    const trialsInBin = trials.filter(t =>
                         t.coherence >= coherenceBins[i] && t.coherence < coherenceBins[i + 1]
                     );
-                    
+
                     if (trialsInBin.length > 0) {
                         const accuracy = (trialsInBin.filter(t => t.correct).length / trialsInBin.length) * 100;
                         performanceByCoherence.push({
@@ -247,15 +252,15 @@
                         });
                     }
                 }
-                
+
                 // Create performance data grouped by duration (averaging across coherences)
                 const performanceByDuration = [];
-                
+
                 for (let j = 0; j < durationBins.length - 1; j++) {
-                    const trialsInBin = trials.filter(t => 
+                    const trialsInBin = trials.filter(t =>
                         t.stimulusDuration >= durationBins[j] && t.stimulusDuration < durationBins[j + 1]
                     );
-                    
+
                     if (trialsInBin.length > 0) {
                         const accuracy = (trialsInBin.filter(t => t.correct).length / trialsInBin.length) * 100;
                         performanceByDuration.push({
@@ -264,14 +269,14 @@
                         });
                     }
                 }
-                
+
                 // Create performance by coherence chart
                 if (byCoherenceCanvasRef.current) {
                     const ctx = byCoherenceCanvasRef.current.getContext('2d');
                     if (byCoherenceCanvasRef.current.chart) {
                         byCoherenceCanvasRef.current.chart.destroy();
                     }
-                    
+
                     byCoherenceCanvasRef.current.chart = new Chart(ctx, {
                         type: 'line',
                         data: {
@@ -300,7 +305,7 @@
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
+                                        label: function (context) {
                                             return `Coherence: ${context.parsed.x.toFixed(0)}%, Accuracy: ${context.parsed.y.toFixed(1)}%`;
                                         }
                                     }
@@ -315,9 +320,9 @@
                                         color: '#94a3b8',
                                         font: { size: 12 }
                                     },
-                                    ticks: { 
+                                    ticks: {
                                         color: '#64748b',
-                                        callback: function(value) { return value.toFixed(0) + '%'; }
+                                        callback: function (value) { return value.toFixed(0) + '%'; }
                                     },
                                     grid: { color: '#334155' }
                                 },
@@ -330,9 +335,9 @@
                                     },
                                     min: 0,
                                     max: 100,
-                                    ticks: { 
+                                    ticks: {
                                         color: '#64748b',
-                                        callback: function(value) { return value + '%'; }
+                                        callback: function (value) { return value + '%'; }
                                     },
                                     grid: { color: '#334155' }
                                 }
@@ -340,14 +345,14 @@
                         }
                     });
                 }
-                
+
                 // Create performance by duration chart
                 if (byDurationCanvasRef.current) {
                     const ctx = byDurationCanvasRef.current.getContext('2d');
                     if (byDurationCanvasRef.current.chart) {
                         byDurationCanvasRef.current.chart.destroy();
                     }
-                    
+
                     byDurationCanvasRef.current.chart = new Chart(ctx, {
                         type: 'line',
                         data: {
@@ -376,7 +381,7 @@
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
+                                        label: function (context) {
                                             return `Duration: ${context.parsed.x.toFixed(0)}ms, Accuracy: ${context.parsed.y.toFixed(1)}%`;
                                         }
                                     }
@@ -391,9 +396,9 @@
                                         color: '#94a3b8',
                                         font: { size: 12 }
                                     },
-                                    ticks: { 
+                                    ticks: {
                                         color: '#64748b',
-                                        callback: function(value) { return value.toFixed(0) + 'ms'; }
+                                        callback: function (value) { return value.toFixed(0) + 'ms'; }
                                     },
                                     grid: { color: '#334155' }
                                 },
@@ -406,9 +411,9 @@
                                     },
                                     min: 0,
                                     max: 100,
-                                    ticks: { 
+                                    ticks: {
                                         color: '#64748b',
-                                        callback: function(value) { return value + '%'; }
+                                        callback: function (value) { return value + '%'; }
                                     },
                                     grid: { color: '#334155' }
                                 }
@@ -416,7 +421,7 @@
                         }
                     });
                 }
-                
+
                 return () => {
                     if (byCoherenceCanvasRef.current?.chart) {
                         byCoherenceCanvasRef.current.chart.destroy();
@@ -426,7 +431,7 @@
                     }
                 };
             }, [trials]);
-            
+
             return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="bg-slate-900 rounded-lg p-3">
@@ -459,68 +464,71 @@
         // ═══════════════════════════════════════════════════════════════
         const DotMotionTask = () => {
             const canvasRef = useRef(null);
-            
+
             // Game state
             const [gameState, setGameState] = useState('intro');
             const [participantId, setParticipantId] = useState(null);
             const [participantName, setParticipantName] = useState('');
-            
+
             // Parameters
             const [coherence, setCoherence] = useState(0.3);
             const [numDots, setNumDots] = useState(100);
             const [stimulusDuration, setStimulusDuration] = useState(1000);
-            
+
             // User-configurable ranges for randomization
-            const [coherenceMin, setCoherenceMin] = useState(0);
-            const [coherenceMax, setCoherenceMax] = useState(0.5);
-            const [durationMin, setDurationMin] = useState(250);
-            const [durationMax, setDurationMax] = useState(1000);
-            
+            // Fixed parameters for this version
+            // Coherence: 0, 5, 10, 20%
+            // Duration: Until response
+
             // Trial data
             const [trials, setTrials] = useState([]);
             const [trialCount, setTrialCount] = useState(0);
             const [totalTrials, setTotalTrials] = useState(20);
             const [feedback, setFeedback] = useState(null);
             const [stimulusStartTime, setStimulusStartTime] = useState(null);
-            
+
             // Trial-specific parameters (generated once for all trials)
             const [trialCoherences, setTrialCoherences] = useState([]);
             const [trialDurations, setTrialDurations] = useState([]);
-            
+
             // Population data
             const [populationData, setPopulationData] = useState([]);
             const [isLoadingPopulation, setIsLoadingPopulation] = useState(false);
             const [dataSaved, setDataSaved] = useState(false);
-            
+
             // Firebase status
             const [firebaseStatus, setFirebaseStatus] = useState(
                 isFirebaseConfigured ? 'connecting' : 'not_configured'
             );
-            
+
             // Display constants
             const CANVAS_SIZE = 300;
             const DOT_RADIUS = 2;
             const DOT_SPEED = 3;
             const APERTURE_RADIUS = 120;
-            
+
             // Refs
             const dotsRef = useRef([]);
             const directionRef = useRef(1);
             const animationRef = useRef(null);
-            
+
             // Initialize trial-specific parameters
             useEffect(() => {
                 const coherences = [];
                 const durations = [];
+                const allowedCoherences = [0, 0.05, 0.1, 0.2];
+
                 for (let i = 0; i < totalTrials; i++) {
-                    // Random coherence within user-defined range
-                    coherences.push(Math.random() * (coherenceMax - coherenceMin) + coherenceMin);
-                    // Random duration within user-defined range
-                    durations.push(Math.floor(Math.random() * (durationMax - durationMin + 1)) + durationMin);
+                    // Randomly select from discrete coherence levels
+                    const selectedCoherence = allowedCoherences[Math.floor(Math.random() * allowedCoherences.length)];
+                    coherences.push(selectedCoherence);
+
+                    // Duration is determined by user response time, so we initialize as null or 0
+                    durations.push(0);
                 }
                 setTrialCoherences(coherences);
                 setTrialDurations(durations);
-            }, [totalTrials, coherenceMin, coherenceMax, durationMin, durationMax]);
+            }, [totalTrials]);
 
             // ═══════════════════════════════════════════════════════════════
             // FIREBASE AUTHENTICATION
@@ -530,13 +538,13 @@
                 console.log('isFirebaseConfigured:', isFirebaseConfigured);
                 console.log('auth:', !!auth);
                 console.log('db:', !!db);
-                
+
                 if (!isFirebaseConfigured || !auth) {
                     console.log('Firebase not configured or auth not available');
                     setFirebaseStatus('not_configured');
                     return;
                 }
-                
+
                 console.log('Attempting anonymous authentication...');
                 auth.signInAnonymously()
                     .then((result) => {
@@ -561,7 +569,7 @@
                     console.log('Cannot load population data: Firebase not connected. Status:', firebaseStatus);
                     return;
                 }
-                
+
                 console.log('Loading population data from Firebase...');
                 setIsLoadingPopulation(true);
                 try {
@@ -569,7 +577,7 @@
                         .orderBy('timestamp', 'desc')
                         .limit(500)
                         .get();
-                    
+
                     const data = snapshot.docs.map(doc => doc.data());
                     console.log('Successfully loaded', data.length, 'results from Firebase');
                     setPopulationData(data);
@@ -589,9 +597,9 @@
                     console.log('Cannot save: Firebase not connected. Status:', firebaseStatus);
                     return;
                 }
-                
+
                 console.log('Attempting to save results to Firebase...');
-                
+
                 try {
                     const resultData = {
                         participantId,
@@ -602,24 +610,21 @@
                         correctRT,
                         totalTrials,
                         numDots,
-                        // Save user-defined parameter ranges
-                        coherenceMin: coherenceMin,
-                        coherenceMax: coherenceMax,
-                        coherenceRange: `${(coherenceMin * 100).toFixed(0)}-${(coherenceMax * 100).toFixed(0)}%`,
-                        durationMin: durationMin,
-                        durationMax: durationMax,
-                        durationRange: `${durationMin}-${durationMax}ms`,
+                        // Save fixed parameter config
+                        coherenceConfig: "Discrete: 0, 5, 10, 20%",
+                        durationConfig: "Until response",
+                        // Save full trial-by-trial data with individual parameters
                         // Save full trial-by-trial data with individual parameters
                         trials,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         userAgent: navigator.userAgent
                     };
-                    
+
                     console.log('Saving data:', resultData);
-                    
+
                     const docRef = await db.collection('dot_motion_results').add(resultData);
                     console.log('Successfully saved with ID:', docRef.id);
-                    
+
                     setDataSaved(true);
                     // Reload population data to include this result
                     await loadPopulationData();
@@ -639,8 +644,8 @@
                     const angle = Math.random() * Math.PI * 2;
                     const r = Math.random() * APERTURE_RADIUS;
                     dots.push({
-                        x: CANVAS_SIZE/2 + Math.cos(angle) * r,
-                        y: CANVAS_SIZE/2 + Math.sin(angle) * r,
+                        x: CANVAS_SIZE / 2 + Math.cos(angle) * r,
+                        y: CANVAS_SIZE / 2 + Math.sin(angle) * r,
                         isSignal: Math.random() < trialCoherence
                     });
                 }
@@ -650,7 +655,7 @@
             const updateDots = useCallback(() => {
                 dotsRef.current = dotsRef.current.map(dot => {
                     let newX, newY;
-                    
+
                     if (dot.isSignal) {
                         newX = dot.x + DOT_SPEED * directionRef.current;
                         newY = dot.y;
@@ -659,17 +664,17 @@
                         newX = dot.x + Math.cos(randomAngle) * DOT_SPEED;
                         newY = dot.y + Math.sin(randomAngle) * DOT_SPEED;
                     }
-                    
-                    const dx = newX - CANVAS_SIZE/2;
-                    const dy = newY - CANVAS_SIZE/2;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    
+
+                    const dx = newX - CANVAS_SIZE / 2;
+                    const dy = newY - CANVAS_SIZE / 2;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
                     if (dist > APERTURE_RADIUS) {
                         const angle = Math.atan2(dy, dx) + Math.PI;
-                        newX = CANVAS_SIZE/2 + Math.cos(angle) * APERTURE_RADIUS * 0.9;
-                        newY = CANVAS_SIZE/2 + Math.sin(angle) * APERTURE_RADIUS * 0.9;
+                        newX = CANVAS_SIZE / 2 + Math.cos(angle) * APERTURE_RADIUS * 0.9;
+                        newY = CANVAS_SIZE / 2 + Math.sin(angle) * APERTURE_RADIUS * 0.9;
                     }
-                    
+
                     return { ...dot, x: newX, y: newY };
                 });
             }, []);
@@ -678,25 +683,25 @@
                 const canvas = canvasRef.current;
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
-                
+
                 ctx.fillStyle = '#1a1a2e';
                 ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-                
+
                 ctx.strokeStyle = '#4a4a6a';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.arc(CANVAS_SIZE/2, CANVAS_SIZE/2, APERTURE_RADIUS, 0, Math.PI * 2);
+                ctx.arc(CANVAS_SIZE / 2, CANVAS_SIZE / 2, APERTURE_RADIUS, 0, Math.PI * 2);
                 ctx.stroke();
-                
+
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(CANVAS_SIZE/2 - 10, CANVAS_SIZE/2);
-                ctx.lineTo(CANVAS_SIZE/2 + 10, CANVAS_SIZE/2);
-                ctx.moveTo(CANVAS_SIZE/2, CANVAS_SIZE/2 - 10);
-                ctx.lineTo(CANVAS_SIZE/2, CANVAS_SIZE/2 + 10);
+                ctx.moveTo(CANVAS_SIZE / 2 - 10, CANVAS_SIZE / 2);
+                ctx.lineTo(CANVAS_SIZE / 2 + 10, CANVAS_SIZE / 2);
+                ctx.moveTo(CANVAS_SIZE / 2, CANVAS_SIZE / 2 - 10);
+                ctx.lineTo(CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 10);
                 ctx.stroke();
-                
+
                 if (gameState === 'stimulus') {
                     ctx.fillStyle = '#ffffff';
                     dotsRef.current.forEach(dot => {
@@ -715,7 +720,7 @@
                         animationRef.current = requestAnimationFrame(animate);
                     };
                     animate();
-                    
+
                     return () => {
                         if (animationRef.current) {
                             cancelAnimationFrame(animationRef.current);
@@ -728,31 +733,26 @@
 
             const startTrial = useCallback(() => {
                 if (trialCoherences.length === 0 || trialDurations.length === 0) return;
-                
+
                 directionRef.current = Math.random() < 0.5 ? -1 : 1;
                 const trialCoherence = trialCoherences[trialCount];
                 const trialDuration = trialDurations[trialCount];
-                
+
                 initializeDots(trialCoherence);
                 setGameState('stimulus');
                 setStimulusStartTime(Date.now());
-                
-                setTimeout(() => {
-                    if (animationRef.current) {
-                        cancelAnimationFrame(animationRef.current);
-                    }
-                    setGameState('ready');
-                }, trialDuration);
+
+                // Stimulus stays on until response (no timeout)
             }, [initializeDots, trialCount, trialCoherences, trialDurations]);
 
             const handleResponse = useCallback((response) => {
                 if (gameState !== 'stimulus' && gameState !== 'ready') return;
                 if (stimulusStartTime === null) return;
-                
+
                 const rt = Date.now() - stimulusStartTime;
-                const correct = (response === 'left' && directionRef.current === -1) || 
-                               (response === 'right' && directionRef.current === 1);
-                
+                const correct = (response === 'left' && directionRef.current === -1) ||
+                    (response === 'right' && directionRef.current === 1);
+
                 const trialData = {
                     trialNum: trialCount + 1,
                     direction: directionRef.current === 1 ? 'right' : 'left',
@@ -760,20 +760,23 @@
                     correct,
                     rt,
                     coherence: trialCoherences[trialCount] || coherence,
-                    stimulusDuration: trialDurations[trialCount] || stimulusDuration
+                    rt,
+                    coherence: trialCoherences[trialCount] || coherence,
+                    stimulusDuration: rt // Duration is the reaction time
                 };
-                
+
                 setTrials(prev => [...prev, trialData]);
                 setFeedback(correct ? 'Correct!' : 'Incorrect');
                 setGameState('feedback');
-                
+
                 setTimeout(() => {
                     if (trialCount + 1 >= totalTrials) {
                         setGameState('results');
                     } else {
                         setTrialCount(prev => prev + 1);
                         setFeedback(null);
-                        setGameState('ready');
+                        // Small delay before next trial is ready
+                        setTimeout(() => setGameState('ready'), 200);
                     }
                 }, 800);
             }, [gameState, stimulusStartTime, trialCount, totalTrials, coherence]);
@@ -789,7 +792,7 @@
                         startTrial();
                     }
                 };
-                
+
                 window.addEventListener('keydown', handleKeyDown);
                 return () => window.removeEventListener('keydown', handleKeyDown);
             }, [handleResponse, startTrial, gameState]);
@@ -802,8 +805,8 @@
                 const accuracy = trials.filter(t => t.correct).length / trials.length;
                 const meanRT = trials.reduce((sum, t) => sum + t.rt, 0) / trials.length;
                 const correctTrials = trials.filter(t => t.correct);
-                const correctRT = correctTrials.length > 0 
-                    ? correctTrials.reduce((sum, t) => sum + t.rt, 0) / correctTrials.length 
+                const correctRT = correctTrials.length > 0
+                    ? correctTrials.reduce((sum, t) => sum + t.rt, 0) / correctTrials.length
                     : 0;
                 return { accuracy, meanRT, correctRT };
             }, [trials]);
@@ -842,7 +845,7 @@
                         <p className="text-slate-400 text-center text-sm mb-2">
                             A classic perceptual decision-making paradigm
                         </p>
-                        
+
                         {/* Firebase Status */}
                         <div className="text-center mb-4">
                             {firebaseStatus === 'connected' && (
@@ -869,8 +872,8 @@
                             <div className="bg-slate-800 rounded-lg p-6 mb-6">
                                 <h2 className="text-lg font-semibold mb-4">Instructions</h2>
                                 <p className="text-slate-300 mb-4">
-                                    You'll see a cloud of moving dots. Some dots move coherently 
-                                    LEFT or RIGHT, while others move randomly. Your job is to 
+                                    You'll see a cloud of moving dots. Some dots move coherently
+                                    LEFT or RIGHT, while others move randomly. Your job is to
                                     decide which direction the coherent dots are moving.
                                 </p>
                                 <ul className="text-slate-300 space-y-2 mb-6">
@@ -878,7 +881,7 @@
                                     <li>• Press <span className="bg-slate-700 px-2 py-1 rounded font-mono">←</span>/<span className="bg-slate-700 px-2 py-1 rounded font-mono">→</span> or tap LEFT/RIGHT buttons to respond</li>
                                     <li>• Respond as quickly and accurately as possible</li>
                                 </ul>
-                                
+
                                 {/* Name input */}
                                 {firebaseStatus === 'connected' && (
                                     <div className="mb-4">
@@ -894,7 +897,7 @@
                                         />
                                     </div>
                                 )}
-                                
+
                                 <div className="border-t border-slate-700 pt-4 mt-4">
                                     <h3 className="text-sm font-semibold text-slate-400 mb-3">
                                         PARAMETERS
@@ -919,106 +922,16 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-3">
-                                                Coherence Range: <span className="text-blue-400 font-bold">{(coherenceMin * 100).toFixed(0)}% - {(coherenceMax * 100).toFixed(0)}%</span>
-                                            </label>
-                                            <div className="relative pt-6 pb-2">
-                                                {/* Visual range indicator */}
-                                                <div className="absolute top-8 left-0 right-0 h-2 bg-slate-700 rounded shadow-inner">
-                                                    <div 
-                                                        className="absolute h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded shadow-md"
-                                                        style={{
-                                                            left: `${(coherenceMin / 0.8) * 100}%`,
-                                                            right: `${100 - (coherenceMax / 0.8) * 100}%`
-                                                        }}
-                                                    ></div>
-                                                </div>
-                                                {/* Min slider */}
-                                                <input
-                                                    type="range"
-                                                    min="0"
-                                                    max="0.8"
-                                                    step="0.05"
-                                                    value={coherenceMin}
-                                                    onChange={(e) => setCoherenceMin(Math.min(parseFloat(e.target.value), coherenceMax - 0.05))}
-                                                    className="absolute top-6 left-0 right-0 w-full appearance-none bg-transparent pointer-events-auto"
-                                                    style={{
-                                                        background: 'transparent',
-                                                        WebkitAppearance: 'none'
-                                                    }}
-                                                />
-                                                {/* Max slider */}
-                                                <input
-                                                    type="range"
-                                                    min="0.05"
-                                                    max="0.8"
-                                                    step="0.05"
-                                                    value={coherenceMax}
-                                                    onChange={(e) => setCoherenceMax(Math.max(parseFloat(e.target.value), coherenceMin + 0.05))}
-                                                    className="absolute top-6 left-0 right-0 w-full appearance-none bg-transparent pointer-events-auto"
-                                                    style={{
-                                                        background: 'transparent',
-                                                        WebkitAppearance: 'none'
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="flex justify-between text-xs font-semibold text-slate-300 mt-1">
-                                                <span className="bg-slate-700 px-2 py-0.5 rounded">0%</span>
-                                                <span className="bg-slate-700 px-2 py-0.5 rounded">80%</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-3">
-                                                Stimulus Duration Range: <span className="text-green-400 font-bold">{durationMin}ms - {durationMax}ms</span>
-                                            </label>
-                                            <div className="relative pt-6 pb-2">
-                                                {/* Visual range indicator */}
-                                                <div className="absolute top-8 left-0 right-0 h-2 bg-slate-700 rounded shadow-inner">
-                                                    <div 
-                                                        className="absolute h-full bg-gradient-to-r from-green-500 to-green-400 rounded shadow-md"
-                                                        style={{
-                                                            left: `${((durationMin - 100) / 1900) * 100}%`,
-                                                            right: `${100 - ((durationMax - 100) / 1900) * 100}%`
-                                                        }}
-                                                    ></div>
-                                                </div>
-                                                {/* Min slider */}
-                                                <input
-                                                    type="range"
-                                                    min="100"
-                                                    max="2000"
-                                                    step="50"
-                                                    value={durationMin}
-                                                    onChange={(e) => setDurationMin(Math.min(parseInt(e.target.value), durationMax - 50))}
-                                                    className="absolute top-6 left-0 right-0 w-full appearance-none bg-transparent pointer-events-auto"
-                                                    style={{
-                                                        background: 'transparent',
-                                                        WebkitAppearance: 'none'
-                                                    }}
-                                                />
-                                                {/* Max slider */}
-                                                <input
-                                                    type="range"
-                                                    min="150"
-                                                    max="2000"
-                                                    step="50"
-                                                    value={durationMax}
-                                                    onChange={(e) => setDurationMax(Math.max(parseInt(e.target.value), durationMin + 50))}
-                                                    className="absolute top-6 left-0 right-0 w-full appearance-none bg-transparent pointer-events-auto"
-                                                    style={{
-                                                        background: 'transparent',
-                                                        WebkitAppearance: 'none'
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="flex justify-between text-xs font-semibold text-slate-300 mt-1">
-                                                <span className="bg-slate-700 px-2 py-0.5 rounded">100ms</span>
-                                                <span className="bg-slate-700 px-2 py-0.5 rounded">2000ms</span>
-                                            </div>
+                                            <p className="text-sm text-slate-400 mb-2">
+                                                <span className="font-semibold text-slate-300">Coherence Levels:</span> 0%, 5%, 10%, 20%
+                                            </p>
+                                            <p className="text-sm text-slate-400">
+                                                <span className="font-semibold text-slate-300">Duration:</span> Until response
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <button
                                     onClick={() => setGameState('ready')}
                                     className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
@@ -1034,18 +947,17 @@
                         {(gameState === 'ready' || gameState === 'stimulus' || gameState === 'feedback') && (
                             <div className="flex flex-col items-center">
                                 <div className="mb-4 text-sm text-slate-400 text-center">
-                                    Trial {trialCount + 1} of {totalTrials} | 
-                                    Coherence: {trialCoherences.length > 0 ? (trialCoherences[trialCount] * 100).toFixed(0) : (coherence * 100).toFixed(0)}% | 
-                                    Duration: {trialDurations.length > 0 ? trialDurations[trialCount] : stimulusDuration}ms
+                                    Trial {trialCount + 1} of {totalTrials} |
+                                    Coherence: {trialCoherences.length > 0 ? (trialCoherences[trialCount] * 100).toFixed(0) : (coherence * 100).toFixed(0)}%
                                 </div>
-                                
+
                                 <canvas
                                     ref={canvasRef}
                                     width={CANVAS_SIZE}
                                     height={CANVAS_SIZE}
                                     className="rounded-lg mb-4 max-w-full h-auto"
                                 />
-                                
+
                                 {gameState === 'ready' && !feedback && (
                                     <div className="mb-4 flex flex-col items-center gap-2">
                                         <p className="text-slate-400 text-sm text-center">Press SPACE or tap below to start trial</p>
@@ -1057,15 +969,14 @@
                                         </button>
                                     </div>
                                 )}
-                                
+
                                 {feedback && (
-                                    <p className={`text-lg font-bold mb-4 ${
-                                        feedback === 'Correct!' ? 'text-green-400' : 'text-red-400'
-                                    }`}>
+                                    <p className={`text-lg font-bold mb-4 ${feedback === 'Correct!' ? 'text-green-400' : 'text-red-400'
+                                        }`}>
                                         {feedback}
                                     </p>
                                 )}
-                                
+
                                 <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md px-4">
                                     <button
                                         onClick={() => handleResponse('left')}
@@ -1141,10 +1052,10 @@
                                                 </div>
                                                 <div className="text-sm text-slate-400">Trials Completed</div>
                                                 <div className="text-xs text-slate-500 mt-1">
-                                                    Coherence: {(coherenceMin * 100).toFixed(0)}-{(coherenceMax * 100).toFixed(0)}%
+                                                    Coherence: {((trialCoherences.reduce((a, b) => a + b, 0) / trialCoherences.length) * 100).toFixed(1)}% (Avg)
                                                 </div>
                                                 <div className="text-xs text-slate-500">
-                                                    Duration: {durationMin}-{durationMax}ms
+                                                    Duration: Response Dependent
                                                 </div>
                                             </div>
                                         </div>
@@ -1181,20 +1092,20 @@
                                         <div className="text-center text-sm text-slate-400 mb-4">
                                             {populationData.length} users • {populationData.reduce((sum, d) => sum + (d.totalTrials || 0), 0).toLocaleString()} total trials
                                         </div>
-                                        
+
                                         {/* Population Summary Stats */}
                                         <div className="bg-slate-900 rounded-lg p-4 mb-4">
                                             <h4 className="font-semibold mb-3 text-center text-slate-300">Aggregate Statistics</h4>
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                                                 <div>
                                                     <div className="text-xl font-bold text-blue-400">
-                                                        {(populationAccuracies.reduce((a,b) => a+b, 0) / populationAccuracies.length).toFixed(1)}%
+                                                        {(populationAccuracies.reduce((a, b) => a + b, 0) / populationAccuracies.length).toFixed(1)}%
                                                     </div>
                                                     <div className="text-xs text-slate-400">Mean Accuracy</div>
                                                 </div>
                                                 <div>
                                                     <div className="text-xl font-bold text-green-400">
-                                                        {(populationRTs.reduce((a,b) => a+b, 0) / populationRTs.length).toFixed(0)}ms
+                                                        {(populationRTs.reduce((a, b) => a + b, 0) / populationRTs.length).toFixed(0)}ms
                                                     </div>
                                                     <div className="text-xs text-slate-400">Mean RT</div>
                                                 </div>
@@ -1212,7 +1123,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         {/* Your Performance vs Population */}
                                         <div className="bg-slate-900 rounded-lg p-4 mb-4">
                                             <h4 className="font-semibold mb-3 text-center text-slate-300">Your Performance Ranking</h4>
@@ -1237,11 +1148,11 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         {/* Histograms */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="bg-slate-900 rounded-lg p-3">
-                                                <Histogram 
+                                                <Histogram
                                                     data={populationAccuracies}
                                                     userValue={myResults.accuracy * 100}
                                                     label="Accuracy Distribution (%)"
@@ -1253,7 +1164,7 @@
                                                 </div>
                                             </div>
                                             <div className="bg-slate-900 rounded-lg p-3">
-                                                <Histogram 
+                                                <Histogram
                                                     data={populationRTs}
                                                     userValue={myResults.correctRT}
                                                     label="Reaction Time Distribution (ms)"
@@ -1265,15 +1176,15 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         {/* Population stats */}
                                         <div className="mt-4 text-center text-sm text-slate-400">
-                                            Population avg: {(populationAccuracies.reduce((a,b) => a+b, 0) / populationAccuracies.length).toFixed(0)}% accuracy, {" "}
-                                            {(populationRTs.reduce((a,b) => a+b, 0) / populationRTs.length).toFixed(0)}ms RT
+                                            Population avg: {(populationAccuracies.reduce((a, b) => a + b, 0) / populationAccuracies.length).toFixed(0)}% accuracy, {" "}
+                                            {(populationRTs.reduce((a, b) => a + b, 0) / populationRTs.length).toFixed(0)}ms RT
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {populationData.length <= 1 && firebaseStatus === 'connected' && (
                                     <div className="bg-slate-900 rounded-lg p-4 mb-6">
                                         <div className="flex items-center justify-between mb-2">
@@ -1300,7 +1211,7 @@
                                         )}
                                     </div>
                                 )}
-                                
+
                                 {/* Trial data */}
                                 <div className="bg-slate-700 rounded-lg p-4 mb-6">
                                     <h3 className="font-semibold mb-2">Trial-by-Trial Data</h3>
@@ -1329,14 +1240,14 @@
                                         ))}
                                     </div>
                                 </div>
-                                
+
                                 {/* Data saved indicator */}
                                 {dataSaved && (
                                     <div className="text-center text-sm text-green-400 mb-4">
                                         ✓ Your results have been saved
                                     </div>
                                 )}
-                                
+
                                 <button
                                     onClick={resetGame}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
@@ -1359,4 +1270,5 @@
         root.render(<DotMotionTask />);
     </script>
 </body>
+
 </html>
