@@ -226,7 +226,7 @@
         // ═══════════════════════════════════════════════════════════════
         const PerformanceHistograms = ({ trials }) => {
             const byCoherenceCanvasRef = useRef(null);
-            const byDurationCanvasRef = useRef(null);
+            const rtByCoherenceCanvasRef = useRef(null);
 
             useEffect(() => {
                 if (!trials || trials.length === 0) return;
@@ -234,10 +234,10 @@
                 // Prepare data for performance by coherence
                 // Bins optimized for discrete values: 0, 0.05, 0.1, 0.2
                 const coherenceBins = [0, 0.02, 0.07, 0.15, 0.25, 0.5];
-                const durationBins = [250, 500, 750, 1000, 1500, 2000, 3000];
 
-                // Create performance data grouped by coherence (averaging across durations)
+                // Create data grouped by coherence
                 const performanceByCoherence = [];
+                const rtByCoherence = [];
 
                 for (let i = 0; i < coherenceBins.length - 1; i++) {
                     const trialsInBin = trials.filter(t =>
@@ -245,28 +245,22 @@
                     );
 
                     if (trialsInBin.length > 0) {
+                        // 1. Accuracy
                         const accuracy = (trialsInBin.filter(t => t.correct).length / trialsInBin.length) * 100;
                         performanceByCoherence.push({
                             x: ((coherenceBins[i] + coherenceBins[i + 1]) / 2) * 100,
                             y: accuracy
                         });
-                    }
-                }
 
-                // Create performance data grouped by duration (averaging across coherences)
-                const performanceByDuration = [];
-
-                for (let j = 0; j < durationBins.length - 1; j++) {
-                    const trialsInBin = trials.filter(t =>
-                        t.stimulusDuration >= durationBins[j] && t.stimulusDuration < durationBins[j + 1]
-                    );
-
-                    if (trialsInBin.length > 0) {
-                        const accuracy = (trialsInBin.filter(t => t.correct).length / trialsInBin.length) * 100;
-                        performanceByDuration.push({
-                            x: (durationBins[j] + durationBins[j + 1]) / 2,
-                            y: accuracy
-                        });
+                        // 2. Reaction Time (Correct trials only)
+                        const correctTrials = trialsInBin.filter(t => t.correct);
+                        if (correctTrials.length > 0) {
+                            const avgRT = correctTrials.reduce((sum, t) => sum + t.rt, 0) / correctTrials.length;
+                            rtByCoherence.push({
+                                x: ((coherenceBins[i] + coherenceBins[i + 1]) / 2) * 100,
+                                y: avgRT
+                            });
+                        }
                     }
                 }
 
@@ -346,19 +340,19 @@
                     });
                 }
 
-                // Create performance by duration chart
-                if (byDurationCanvasRef.current) {
-                    const ctx = byDurationCanvasRef.current.getContext('2d');
-                    if (byDurationCanvasRef.current.chart) {
-                        byDurationCanvasRef.current.chart.destroy();
+                // Create RT by coherence chart
+                if (rtByCoherenceCanvasRef.current) {
+                    const ctx = rtByCoherenceCanvasRef.current.getContext('2d');
+                    if (rtByCoherenceCanvasRef.current.chart) {
+                        rtByCoherenceCanvasRef.current.chart.destroy();
                     }
 
-                    byDurationCanvasRef.current.chart = new Chart(ctx, {
+                    rtByCoherenceCanvasRef.current.chart = new Chart(ctx, {
                         type: 'line',
                         data: {
                             datasets: [{
-                                label: 'Performance (%)',
-                                data: performanceByDuration,
+                                label: 'Reaction Time (ms)',
+                                data: rtByCoherence,
                                 backgroundColor: 'rgba(34, 197, 94, 0.2)',
                                 borderColor: 'rgba(34, 197, 94, 1)',
                                 borderWidth: 2,
@@ -375,14 +369,14 @@
                                 legend: { display: false },
                                 title: {
                                     display: true,
-                                    text: 'Performance by Duration',
+                                    text: 'Reaction Time by Coherence',
                                     color: '#e2e8f0',
                                     font: { size: 14 }
                                 },
                                 tooltip: {
                                     callbacks: {
                                         label: function (context) {
-                                            return `Duration: ${context.parsed.x.toFixed(0)}ms, Accuracy: ${context.parsed.y.toFixed(1)}%`;
+                                            return `Coherence: ${context.parsed.x.toFixed(0)}%, RT: ${context.parsed.y.toFixed(0)}ms`;
                                         }
                                     }
                                 }
@@ -392,28 +386,28 @@
                                     type: 'linear',
                                     title: {
                                         display: true,
-                                        text: 'Duration (ms)',
+                                        text: 'Coherence (%)',
                                         color: '#94a3b8',
                                         font: { size: 12 }
                                     },
                                     ticks: {
                                         color: '#64748b',
-                                        callback: function (value) { return value.toFixed(0) + 'ms'; }
+                                        callback: function (value) { return value.toFixed(0) + '%'; }
                                     },
                                     grid: { color: '#334155' }
                                 },
                                 y: {
                                     title: {
                                         display: true,
-                                        text: 'Performance (Accuracy %)',
+                                        text: 'Reaction Time (ms)',
                                         color: '#94a3b8',
                                         font: { size: 12 }
                                     },
                                     min: 0,
-                                    max: 100,
+                                    // Max will auto-scale, which is good for RT
                                     ticks: {
                                         color: '#64748b',
-                                        callback: function (value) { return value + '%'; }
+                                        callback: function (value) { return value + 'ms'; }
                                     },
                                     grid: { color: '#334155' }
                                 }
@@ -426,8 +420,8 @@
                     if (byCoherenceCanvasRef.current?.chart) {
                         byCoherenceCanvasRef.current.chart.destroy();
                     }
-                    if (byDurationCanvasRef.current?.chart) {
-                        byDurationCanvasRef.current.chart.destroy();
+                    if (rtByCoherenceCanvasRef.current?.chart) {
+                        rtByCoherenceCanvasRef.current.chart.destroy();
                     }
                 };
             }, [trials]);
@@ -441,7 +435,7 @@
                     </div>
                     <div className="bg-slate-900 rounded-lg p-3">
                         <div className="h-64">
-                            <canvas ref={byDurationCanvasRef}></canvas>
+                            <canvas ref={rtByCoherenceCanvasRef}></canvas>
                         </div>
                     </div>
                 </div>
@@ -611,7 +605,7 @@
                         totalTrials,
                         numDots,
                         // Save fixed parameter config
-                        coherenceConfig: "Discrete: 0, 5, 10, 20%",
+                        coherenceConfig: "Discrete: 0, 5, 10%",
                         durationConfig: "Until response",
                         // Save full trial-by-trial data with individual parameters
                         // Save full trial-by-trial data with individual parameters
@@ -923,7 +917,7 @@
                                         </div>
                                         <div>
                                             <p className="text-sm text-slate-400 mb-2">
-                                                <span className="font-semibold text-slate-300">Coherence Levels:</span> 0%, 5%, 10%, 20%
+                                                <span className="font-semibold text-slate-300">Coherence Levels:</span> 0%, 5%, 10%
                                             </p>
                                             <p className="text-sm text-slate-400">
                                                 <span className="font-semibold text-slate-300">Duration:</span> Until response
