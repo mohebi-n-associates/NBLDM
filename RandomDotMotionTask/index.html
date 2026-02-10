@@ -232,37 +232,35 @@
                 if (!trials || trials.length === 0) return;
 
                 // Prepare data for performance by coherence
-                // Bins optimized for discrete values: 0, 0.05, 0.1
-                const coherenceBins = [0, 0.02, 0.07, 0.15, 0.5];
+                // Dynamically find unique coherence levels from data
+                const uniqueCoherences = [...new Set(trials.map(t => t.coherence))].sort((a, b) => a - b);
 
                 // Create data grouped by coherence
                 const performanceByCoherence = [];
                 const rtByCoherence = [];
 
-                for (let i = 0; i < coherenceBins.length - 1; i++) {
-                    const trialsInBin = trials.filter(t =>
-                        t.coherence >= coherenceBins[i] && t.coherence < coherenceBins[i + 1]
-                    );
+                uniqueCoherences.forEach(coh => {
+                    const trialsAtCoh = trials.filter(t => Math.abs(t.coherence - coh) < 0.001);
 
-                    if (trialsInBin.length > 0) {
+                    if (trialsAtCoh.length > 0) {
                         // 1. Accuracy
-                        const accuracy = (trialsInBin.filter(t => t.correct).length / trialsInBin.length) * 100;
+                        const accuracy = (trialsAtCoh.filter(t => t.correct).length / trialsAtCoh.length) * 100;
                         performanceByCoherence.push({
-                            x: ((coherenceBins[i] + coherenceBins[i + 1]) / 2) * 100,
+                            x: coh * 100,
                             y: accuracy
                         });
 
                         // 2. Reaction Time (Correct trials only)
-                        const correctTrials = trialsInBin.filter(t => t.correct);
+                        const correctTrials = trialsAtCoh.filter(t => t.correct);
                         if (correctTrials.length > 0) {
                             const avgRT = correctTrials.reduce((sum, t) => sum + t.rt, 0) / correctTrials.length;
                             rtByCoherence.push({
-                                x: ((coherenceBins[i] + coherenceBins[i + 1]) / 2) * 100,
+                                x: coh * 100,
                                 y: avgRT
                             });
                         }
                     }
-                }
+                });
 
                 // Create performance by coherence chart
                 if (byCoherenceCanvasRef.current) {
